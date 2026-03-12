@@ -1,0 +1,45 @@
+/* css/reports.css */
+
+.filter-container { padding: 15px; background: #fff; border-bottom: 1px solid #eee; display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; }
+.filter-container::-webkit-scrollbar { display: none; }
+.filter-btn { padding: 8px 15px; border: 1px solid #3498db; background: white; color: #3498db; border-radius: 20px; font-weight: bold; cursor: pointer; white-space: nowrap; transition: 0.2s;}
+.filter-btn.active { background: #3498db; color: white; }
+
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px; }
+.stat-box { background: white; padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #eee;}
+.stat-box h4 { margin: 0 0 5px; color: #7f8c8d; font-size: 13px; }
+.stat-box .val { font-size: 20px; font-weight: bold; color: #2c3e50; }
+.stat-box.sales .val { color: #27ae60; }
+
+.table-container { padding: 0 15px 80px; }
+.reports-table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+.reports-table th, .reports-table td { padding: 12px; text-align: right; border-bottom: 1px solid #eee; font-size: 14px;}
+.reports-table th { background: #34495e; color: white; }
+.reports-table tr:last-child td { border-bottom: none; }
+
+.print-action { padding: 15px; text-align: center; }
+.btn-print-a4 { background: #2c3e50; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px;}
+
+.print-header { display: none; } /* مخفي في الشاشة العادية */
+
+/* ==========================================
+   السحر: تنسيق الطباعة وتحويلها لـ A4 PDF
+   ========================================== */
+@media print {
+    @page { size: A4; margin: 15mm; }
+    body { background: white; padding: 0; color: black; }
+    
+    /* إخفاء كل ما لا يخص الطباعة */
+    header, .bottom-nav, .filter-container, .print-action, .fab-btn, #custom-alert-overlay { display: none !important; }
+    
+    .table-container { padding: 0; }
+    .reports-table { box-shadow: none; border: 1px solid #ccc; }
+    .reports-table th { background: #eee !important; color: black !important; -webkit-print-color-adjust: exact; }
+    .stats-grid { border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 20px; }
+    .stat-box { border: none; box-shadow: none; }
+    
+    /* إظهار ترويسة الطباعة الرسمية */
+    .print-header { display: block; text-align: center; margin-bottom: 20px; border-bottom: 2px dashed #ccc; padding-bottom: 10px; }
+    .print-header h1 { margin: 0; font-size: 24px; }
+    .print-header p { margin: 5px 0; color: #555; }
+}

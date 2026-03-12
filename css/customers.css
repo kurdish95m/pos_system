@@ -1,0 +1,32 @@
+/* css/customers.css */
+
+/* منطقة البحث */
+.controls-area { padding: 15px 15px 5px; background: #f4f6f8; }
+.controls-area input { padding: 12px; border: 1px solid #dcdde1; border-radius: 8px; font-size: 14px; width: 100%; box-sizing: border-box; font-family: inherit; }
+.controls-area input:focus { outline: none; border-color: #3498db; }
+
+/* مربع ملخص العملاء */
+.summary-box { background: #eafaf1; color: #27ae60; padding: 10px; margin: 10px 15px 0; border-radius: 8px; text-align: center; font-weight: bold; font-size: 14px; border: 1px solid #2ecc71; display: flex; justify-content: space-around; }
+
+.customers-list { padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+
+/* كرت العميل */
+.customer-card { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 10px; }
+.customer-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.customer-info h3 { margin: 0 0 5px 0; font-size: 16px; color: #2c3e50; }
+.customer-info p { margin: 0; font-size: 13px; color: #7f8c8d; }
+.customer-points { background: #f1c40f; color: #fff; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+
+/* أزرار التحكم (تعديل، حذف، كشف حساب) */
+.customer-actions { display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed #eee; padding-top: 10px; }
+.action-icons { display: flex; gap: 15px; }
+.action-btn { background: none; border: none; font-size: 18px; cursor: pointer; padding: 0; }
+.statement-btn { background: #eafaf1; color: #27ae60; border: none; padding: 6px 12px; border-radius: 5px; font-size: 12px; font-weight: bold; cursor: pointer; }
+
+/* نافذة كشف الحساب (Modal) */
+.statement-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; width: 90%; max-width: 400px; max-height: 80vh; border-radius: 15px; padding: 20px; box-sizing: border-box; z-index: 21; display: none; flex-direction: column; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+.statement-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #eee; padding-bottom: 10px; }
+.statement-header h3 { margin: 0; color: #2c3e50; font-size: 18px; }
+.close-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: #e74c3c; }
+.statement-body { overflow-y: auto; flex-grow: 1; font-size: 14px; color: #34495e; }
+.statement-order { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }

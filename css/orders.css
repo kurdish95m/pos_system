@@ -1,0 +1,68 @@
+/* css/orders.css */
+
+.controls-area {
+    padding: 15px 15px 5px;
+    background: #f4f6f8;
+}
+
+.controls-area input {
+    padding: 12px;
+    border: 1px solid #dcdde1;
+    border-radius: 8px;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.controls-area input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+/* صندوق الملخص الجديد */
+.summary-box {
+    background: #eafaf1;
+    color: #27ae60;
+    padding: 10px;
+    margin: 10px 15px 0;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 14px;
+    border: 1px solid #2ecc71;
+    display: flex;
+    justify-content: space-around;
+}
+
+.orders-list { padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+.order-card { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; border-right: 4px solid #3498db; cursor: pointer; transition: 0.2s;}
+.order-card:active { transform: scale(0.98); background: #f9f9f9; }
+.order-info h3 { margin: 0 0 5px 0; font-size: 16px; color: #2c3e50; }
+.order-info p { margin: 0; font-size: 12px; color: #7f8c8d; }
+.order-total { font-weight: bold; color: #27ae60; font-size: 18px; }
+
+/* نافذة عرض الفاتورة */
+.invoice-modal {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: white; width: 90%; max-width: 400px; max-height: 80vh;
+    border-radius: 15px; padding: 20px; box-sizing: border-box;
+    z-index: 21; display: none; flex-direction: column; gap: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.invoice-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #eee; padding-bottom: 10px; }
+.invoice-header h3 { margin: 0; color: #2c3e50; font-size: 18px; }
+.close-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: #e74c3c; }
+
+.invoice-body { overflow-y: auto; flex-grow: 1; font-size: 14px; color: #34495e; }
+.invoice-details-top { margin-bottom: 15px; background: #f4f6f8; padding: 10px; border-radius: 8px; }
+.invoice-details-top p { margin: 5px 0; }
+
+.invoice-items table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+.invoice-items th, .invoice-items td { padding: 8px 0; text-align: right; border-bottom: 1px solid #eee; }
+.invoice-items th { color: #7f8c8d; font-size: 12px; }
+
+.invoice-total { font-size: 18px; font-weight: bold; text-align: left; padding-top: 10px; border-top: 2px dashed #eee; color: #27ae60; }
+
+.print-btn { background: #2c3e50; color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; gap: 10px; align-items: center;}

@@ -1,0 +1,80 @@
+/* css/alert.css */
+
+/* ==========================================
+   تصميم النافذة المنبثقة المخصصة (Custom Alert & Confirm)
+   ========================================== */
+
+/* خلفية النافذة الشفافة والضبابية */
+.custom-alert-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
+    display: none; /* مخفي افتراضياً */
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(3px); /* تأثير ضبابي للخلفية */
+}
+
+/* صندوق الرسالة نفسه */
+.custom-alert-box {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    width: 80%;
+    max-width: 320px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    animation: popIn 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* الأيقونة (صح، خطأ، تنبيه، استفهام) */
+.custom-alert-icon {
+    font-size: 45px;
+    margin-bottom: 5px;
+}
+
+/* نص الرسالة */
+.custom-alert-box p {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 1.5;
+}
+
+/* تصميم الأزرار الافتراضي داخل النافذة */
+.custom-alert-box button {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 10px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+/* تأثير عند الضغط على الزر */
+.custom-alert-box button:active {
+    transform: scale(0.95);
+}
+
+/* حركة الظهور (الأنيميشن) */
+@keyframes popIn {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
