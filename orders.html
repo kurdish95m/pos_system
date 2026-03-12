@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="notranslate">
+    <title>الطلبات - Mobile POS</title>
+    
+    <link rel="stylesheet" href="css/shared.css">
+    <link rel="stylesheet" href="css/alert.css">
+    <link rel="stylesheet" href="css/orders.css">
+</head>
+<body>
+	<header style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #2c3e50; color: white; position: sticky; top: 0; z-index: 1000;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <span onclick="toggleSidebar()" style="font-size: 24px; cursor: pointer; padding: 5px;">☰</span>
+        <h2 style="margin:0; font-size: 1.1rem;">🧾 سجل الفواتير</h2>
+    </div>
+    <div id="header-actions">
+        <div id="user-greeting" style="font-size: 0.8rem; opacity: 0.8;"></div>
+    </div>
+</header>
+
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header" style="background: #34495e; padding: 30px 20px; color: white;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="width: 50px; height: 50px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
+            <div>
+                <h3 id="side-user-name" style="margin:0; font-size: 16px;">إسماعيل</h3>
+                <span style="font-size: 12px; color: #2ecc71;">● مدير النظام</span>
+            </div>
+        </div>
+    </div>
+    <div class="sidebar-links" style="padding: 15px 0;">
+        <div style="padding: 10px 25px; font-size: 11px; color: #95a5a6; font-weight: bold;">إدارة البيانات</div>
+        <a href="products.html" class="nav-link">📦 المنتجات</a>
+        <a href="categories.html" class="nav-link">🗂️ الأصناف</a>
+        <a href="customers.html" class="nav-link">👥 العملاء</a>
+        <a href="users.html" class="nav-link">👤 المستخدمين (الموظفين)</a>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+        <a href="#" onclick="logout()" class="nav-link" style="color: #e74c3c;">🚪 تسجيل الخروج</a>
+    </div>
+</div>
+
+<nav class="bottom-nav" style="position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; background: white; padding: 10px 0; border-top: 1px solid #eee; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000;">
+    <a href="dashboard.html" class="b-nav-item">🏠<br>الرئيسية</a>
+    <a href="pos.html" class="b-nav-item">📱<br>نقطة البيع</a>
+    <a href="orders.html" class="b-nav-item active">🧾<br>الطلبات</a>
+    <a href="reports.html" class="b-nav-item">📊<br>التقارير</a>
+</nav>
+
+    <div class="controls-area">
+        <input type="text" id="search-order" placeholder="🔍 ابحث برقم الفاتورة أو اسم العميل..." onkeyup="handleSearch()">
+    </div>
+
+    <div class="summary-box" id="summary-box">
+        <span>🧾 الفواتير: 0</span>
+        <span>💰 الإجمالي: $0.00</span>
+    </div>
+
+    <div id="loading">جاري تحميل الفواتير...</div>
+    <div id="orders-list" class="orders-list"></div>
+
+
+    <div class="modal-overlay" id="modal-overlay" onclick="closeInvoiceModal()"></div>
+    <div class="invoice-modal" id="invoice-modal">
+        <div class="invoice-header">
+            <h3>تفاصيل الفاتورة</h3>
+            <button class="close-btn" onclick="closeInvoiceModal()">✖</button>
+        </div>
+        
+        <div class="invoice-body" id="invoice-body"></div>
+
+        <button class="print-btn" id="print-btn" onclick="printReceipt()">🖨️ طباعة الفاتورة (80mm)</button>
+    </div>
+
+    <script src="js/alert.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/UserManager.js"></script> <!-- تمت الإضافة -->
+<script>
+        let allOrders = []; 
+        let currentOrderForPrint = null; 
+        let currentItemsForPrint = [];
+function updateSummary(ordersArray) {
+    const totalOrders = ordersArray.length;
+    const totalAmount = ordersArray.reduce((sum, order) => sum + parseFloat(order.total_amount), 0);
+    
+    document.getElementById('summary-box').innerHTML = `
+        <span>🧾 الفواتير: ${totalOrders}</span>
+        <span>💰 الإجمالي: ${formatCurrency(totalAmount)}</span>
+    `;
+}
+
+        function normalizeArabic(text) {
+            if (!text) return '';
+            return String(text).replace(/[أإآا]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').toLowerCase();
+        }
+
+        async function fetchOrders() {
+            // تم إضافة users ( username ) لجلب اسم الموظف من قاعدة البيانات
+            const { data: orders, error } = await supabaseClient
+                .from('orders')
+                .select('id, total_amount, created_at, customers ( name ), users ( username )') 
+                .order('created_at', { ascending: false });
+
+            const loadingDiv = document.getElementById('loading');
+
+            if (error) {
+                loadingDiv.innerText = "حدث خطأ في جلب الفواتير.";
+                return;
+            }
+
+            loadingDiv.style.display = 'none';
+            allOrders = orders; 
+            
+            updateSummary(allOrders); 
+            renderOrders(allOrders); 
+        }
+
+        function renderOrders(ordersToRender) {
+            const listDiv = document.getElementById('orders-list');
+            listDiv.innerHTML = '';
+
+            if(ordersToRender.length === 0) {
+                listDiv.innerHTML = '<p style="text-align:center; color:#7f8c8d;">لا توجد فواتير مطابقة للبحث.</p>';
+                return;
+            }
+
+            ordersToRender.forEach(order => {
+                const item = document.createElement('div');
+                item.className = 'order-card';
+                
+                const date = new Date(order.created_at).toLocaleString('ar-EG');
+                const customerName = order.customers ? order.customers.name : 'زبون نقدي';
+                const cashierName = order.users ? order.users.username : 'غير معروف'; // جلب اسم الكاشير
+
+                // تمرير اسم الكاشير لـ viewInvoice
+                item.onclick = () => viewInvoice(order.id, order.total_amount, order.created_at, order.customers?.name, cashierName);
+
+                item.innerHTML = `
+                    <div class="order-info">
+                        <h3>رقم الفاتورة: #${order.id}</h3>
+                        <p>👤 العميل: ${customerName}</p>
+                        <p>🧑‍💻 الكاشير: ${cashierName}</p>
+                        <p>📅 ${date}</p>
+                    </div>
+              <div class="order-total">
+    ${formatCurrency(order.total_amount)}
+</div>
+                `;
+                listDiv.appendChild(item);
+            });
+        }
+
+        function handleSearch() {
+            const rawSearchTerm = document.getElementById('search-order').value.trim();
+            const searchTerm = normalizeArabic(rawSearchTerm);
+            
+            if (searchTerm === '') {
+                updateSummary(allOrders);
+                renderOrders(allOrders); 
+                return;
+            }
+
+            const filteredOrders = allOrders.filter(order => {
+                const orderIdStr = order.id.toString();
+                const customerName = order.customers ? normalizeArabic(order.customers.name) : 'زبون نقدي';
+                const cashierName = order.users ? normalizeArabic(order.users.username) : 'غير معروف';
+                
+                // يمكنك البحث برقم الفاتورة، اسم العميل، أو اسم الكاشير!
+                return orderIdStr.includes(searchTerm) || customerName.includes(searchTerm) || cashierName.includes(searchTerm);
+            });
+
+            updateSummary(filteredOrders); 
+            renderOrders(filteredOrders); 
+        }
+
+        // تم إضافة cashierName كمعامل (parameter)
+        async function viewInvoice(orderId, total, dateStr, customerName, cashierName) {
+
+            document.getElementById('modal-overlay').style.display = 'block';
+            document.getElementById('invoice-modal').style.display = 'flex';
+            document.getElementById('invoice-body').innerHTML = '<div style="text-align:center; padding: 20px;">جاري جلب المنتجات...</div>';
+
+            const date = new Date(dateStr).toLocaleString('ar-EG');
+            const cName = customerName || 'زبون نقدي';
+            const cCashier = cashierName || 'غير معروف'; // حفظ اسم الكاشير
+
+            const { data: items, error } = await supabaseClient
+                .from('order_items')
+                .select('quantity, price_at_time, products ( name )')
+                .eq('order_id', orderId);
+
+            if (error) return;
+
+            // إضافة اسم الكاشير لبيانات الطباعة
+            currentOrderForPrint = { id: orderId, total: total, date: date, customer: cName, cashier: cCashier };
+            currentItemsForPrint = items;
+
+            // أولاً: تحديث أسطر المنتجات
+let itemsHtml = items.map(i => `
+    <tr>
+        <td>${i.products?.name || 'منتج محذوف'}</td>
+        <td style="text-align:center;">${i.quantity}</td>
+        <td>${formatCurrency(i.quantity * i.price_at_time)}</td>
+    </tr>
+`).join('');
+
+            // عرض الكاشير في نافذة تفاصيل الفاتورة
+            document.getElementById('invoice-body').innerHTML = `
+                <div class="invoice-details-top">
+                    <p><strong>رقم الفاتورة:</strong> #${orderId}</p>
+                    <p><strong>العميل:</strong> ${cName}</p>
+                    <p><strong>الكاشير:</strong> ${cCashier}</p> <p><strong>التاريخ:</strong> ${date}</p>
+                </div>
+                <div class="invoice-items">
+                    <table>
+                        <thead>
+                            <tr><th>الصنف</th><th style="text-align:center;">الكمية</th><th>المجموع</th></tr>
+                        </thead>
+                        <tbody>${itemsHtml}</tbody>
+                    </table>
+                </div>
+                <div class="invoice-total">الإجمالي: ${formatCurrency(total)}</div>
+            `;
+        }
+
+        function closeInvoiceModal() {
+            document.getElementById('modal-overlay').style.display = 'none';
+            document.getElementById('invoice-modal').style.display = 'none';
+        }
+
+        function printReceipt() {
+            if (!currentOrderForPrint || currentItemsForPrint.length === 0) return;
+            let printContent = `
+                <html>
+                <head>
+                    <title>طباعة فاتورة #${currentOrderForPrint.id}</title>
+                    <style>
+                        @page { margin: 0; }
+                        body { font-family: 'Courier New', monospace; width: 72mm; margin: 0 auto; padding: 10px 0; color: #000; font-size: 12px; direction: rtl; }
+                        .header { text-align: center; margin-bottom: 10px; }
+                        .header h2 { margin: 0; font-size: 18px; }
+                        .header p { margin: 3px 0; font-size: 12px; }
+                        .divider { border-top: 1px dashed #000; margin: 8px 0; }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+                        th, td { text-align: right; padding: 4px 0; font-size: 12px; }
+                        th { border-bottom: 1px dashed #000; }
+                        .total-section { font-weight: bold; font-size: 14px; text-align: left; }
+                        .footer { text-align: center; margin-top: 15px; font-size: 12px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h2>نظام نقاط البيع</h2>
+                        <p>فاتورة: #${currentOrderForPrint.id}</p>
+                        <p>العميل: ${currentOrderForPrint.customer}</p>
+                        <p>الكاشير: ${currentOrderForPrint.cashier}</p>
+                        <p>التاريخ: ${currentOrderForPrint.date}</p>
+                    </div>
+                    <div class="divider"></div>
+                    <table>
+                        <tr><th style="width: 50%;">الصنف</th><th style="width: 20%; text-align:center;">كمية</th><th style="width: 30%;">السعر</th></tr>
+                        ${currentItemsForPrint.map(i => `
+                            <tr>
+                                <td>${i.products?.name || 'محذوف'}</td>
+                                <td style="text-align:center;">${i.quantity}</td>
+                                <td>${formatCurrency(i.quantity * i.price_at_time)}</td>
+                            </tr>
+                        `).join('')}
+                    </table>
+                    <div class="divider"></div>
+                    <div class="total-section">الإجمالي: ${formatCurrency(currentOrderForPrint.total)}</div>
+                    <div class="divider"></div>
+                    <div class="footer"><p>شكراً لزيارتكم!</p></div>
+                </body>
+                </html>
+            `;
+            let printWindow = window.open('', '_blank', 'width=400,height=600');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
+        }
+
+        // تشغيل البداية
+        fetchOrders();
+    </script>
+</body>
+</html>

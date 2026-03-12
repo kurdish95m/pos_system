@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="notranslate">
+    <title>تقارير المبيعات - Mobile POS</title>
+    
+    <link rel="stylesheet" href="css/shared.css">
+    <link rel="stylesheet" href="css/alert.css">
+    <link rel="stylesheet" href="css/reports.css">
+</head>
+<body>
+
+		<header style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #2c3e50; color: white; position: sticky; top: 0; z-index: 1000;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <span onclick="toggleSidebar()" style="font-size: 24px; cursor: pointer; padding: 5px;">☰</span>
+        <h2 style="margin:0; font-size: 1.1rem;">📈 تقارير الجرد والمبيعات</h2>
+    </div>
+    <div id="header-actions">
+        <div id="user-greeting" style="font-size: 0.8rem; opacity: 0.8;"></div>
+    </div>
+</header>
+	<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header" style="background: #34495e; padding: 30px 20px; color: white;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="width: 50px; height: 50px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
+            <div>
+                <h3 id="side-user-name" style="margin:0; font-size: 16px;">إسماعيل</h3>
+                <span style="font-size: 12px; color: #2ecc71;">● مدير النظام</span>
+            </div>
+        </div>
+    </div>
+    <div class="sidebar-links" style="padding: 15px 0;">
+        <div style="padding: 10px 25px; font-size: 11px; color: #95a5a6; font-weight: bold;">إدارة البيانات</div>
+        <a href="products.html" class="nav-link">📦 المنتجات</a>
+        <a href="categories.html" class="nav-link">🗂️ الأصناف</a>
+        <a href="customers.html" class="nav-link">👥 العملاء</a>
+        <a href="users.html" class="nav-link">👤 المستخدمين (الموظفين)</a>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+        <a href="#" onclick="logout()" class="nav-link" style="color: #e74c3c;">🚪 تسجيل الخروج</a>
+    </div>
+</div>
+
+<nav class="bottom-nav" style="position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; background: white; padding: 10px 0; border-top: 1px solid #eee; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000;">
+    <a href="dashboard.html" class="b-nav-item">🏠<br>الرئيسية</a>
+    <a href="pos.html" class="b-nav-item">📱<br>نقطة البيع</a>
+    <a href="orders.html" class="b-nav-item">🧾<br>الطلبات</a>
+    <a href="reports.html" class="b-nav-item">📊<br>التقارير</a>
+</nav>
+
+    <div class="print-header" id="print-header">
+        <h1>تقرير المبيعات الشامل</h1>
+        <p id="print-date">التاريخ: </p>
+    </div>
+
+    <div class="filter-container">
+        <button class="filter-btn active" onclick="loadReport('today', this)">مبيعات اليوم</button>
+        <button class="filter-btn" onclick="loadReport('week', this)">هذا الأسبوع</button>
+        <button class="filter-btn" onclick="loadReport('month', this)">هذا الشهر</button>
+        <button class="filter-btn" onclick="loadReport('all', this)">كل الأوقات</button>
+    </div>
+
+
+    <div id="loading" style="text-align: center; padding: 20px;">جاري حساب البيانات...</div>
+    
+    <div class="stats-grid" id="stats-grid" style="display: none;">
+        <div class="stat-box sales">
+            <h4>إجمالي الإيرادات</h4>
+            <div class="val" id="rep-total-sales">$0.00</div>
+        </div>
+        <div class="stat-box">
+            <h4>عدد الفواتير</h4>
+            <div class="val" id="rep-orders-count">0</div>
+        </div>
+        <div class="stat-box">
+            <h4>عدد الزبائن</h4>
+            <div class="val" id="rep-customers-count">0</div>
+        </div>
+        <div class="stat-box">
+            <h4>المنتجات المباعة (قطع)</h4>
+            <div class="val" id="rep-items-count">0</div>
+        </div>
+    </div>
+
+    <div class="table-container" id="table-container" style="display: none;">
+        <table class="reports-table">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">المنتج</th>
+                    <th style="width: 20%; text-align: center;">الكمية</th>
+					<th style="width: 20%; text-align: center;">السعر</th>
+                    <th style="width: 25%;">الإجمالي</th>
+                </tr>
+            </thead>
+            <tbody id="report-table-body"> </tbody>
+        </table>
+    </div>
+	
+    <div class="print-action">
+        <button class="btn-print-a4" onclick="window.print()">📄 حفظ كـ PDF (A4)</button>
+    </div>
+	
+    <script src="js/alert.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/UserManager.js"></script> <!-- تمت الإضافة -->
+    <script>
+        // حماية الصفحة للمدير فقط
+        if (localStorage.getItem("user_role") !== "admin") {
+            alert("عذراً ✋، هذه الصفحة مخصصة لمدير النظام فقط.");
+            window.location.href = "pos.html";
+        }
+
+        async function loadReport(period, btnElement) {
+            // تحديث الأزرار
+            if(btnElement) {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btnElement.classList.add('active');
+            }
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('stats-grid').style.display = 'none';
+            document.getElementById('table-container').style.display = 'none';
+
+            // 1. تحديد التواريخ بناءً على الفلتر
+            let startDate = new Date();
+            startDate.setHours(0, 0, 0, 0); // بداية اليوم كافتراضي
+            let endDate = new Date();
+            endDate.setHours(23, 59, 59, 999);
+
+            let periodText = "مبيعات اليوم";
+
+            if (period === 'week') {
+                startDate.setDate(startDate.getDate() - 7);
+                periodText = "مبيعات آخر 7 أيام";
+            } else if (period === 'month') {
+                startDate.setDate(1); // بداية الشهر الحالي
+                periodText = "مبيعات هذا الشهر";
+            } else if (period === 'all') {
+                startDate = new Date(2000, 0, 1); // تاريخ قديم جداً لجلب الكل
+                periodText = "المبيعات الإجمالية (كل الأوقات)";
+            }
+
+            document.getElementById('print-date').innerText = `نوع التقرير: ${periodText} | تاريخ الاستخراج: ${new Date().toLocaleDateString('ar-EG')}`;
+
+            // 2. جلب الفواتير مع تفاصيل المنتجات ضمن هذا التاريخ
+            const { data: orders, error } = await supabaseClient
+                .from('orders')
+                .select(`
+                    id, total_amount, customer_id, created_at,
+                    order_items ( quantity, price_at_time, products ( name ) )
+                `)
+                .gte('created_at', startDate.toISOString())
+                .lte('created_at', endDate.toISOString());
+
+            if (error) {
+                alert("حدث خطأ أثناء جلب التقارير.");
+                return;
+            }
+
+            // 3. تحليل وتجميع البيانات (Aggregation)
+            let totalSales = 0;
+            let totalOrders = orders.length;
+            let uniqueCustomers = new Set();
+            let totalItemsSold = 0;
+            let productSummary = {}; // كائن لجمع المنتجات المتشابهة
+
+            orders.forEach(order => {
+                totalSales += parseFloat(order.total_amount);
+                if (order.customer_id) uniqueCustomers.add(order.customer_id);
+
+                order.order_items.forEach(item => {
+                    totalItemsSold += item.quantity;
+                    let pName = item.products ? item.products.name : 'منتج محذوف';
+                    let itemTotalRevenue = item.quantity * item.price_at_time;
+
+                    // الجديد: حفظ سعر الوحدة (price)
+                    if (!productSummary[pName]) {
+                        productSummary[pName] = { qty: 0, revenue: 0, price: item.price_at_time };
+                    }
+                    productSummary[pName].qty += item.quantity;
+                    productSummary[pName].revenue += itemTotalRevenue;
+                    // تحديث السعر ليكون آخر سعر تم البيع به
+                    productSummary[pName].price = item.price_at_time; 
+                });
+            });
+
+            // 4. عرض ملخص الأرقام
+       // ابحث عن هذا السطر واستبدله
+              document.getElementById('rep-total-sales').innerText = formatCurrency(totalSales);
+            document.getElementById('rep-orders-count').innerText = formatCurrency(totalOrders);
+            document.getElementById('rep-customers-count').innerText =formatCurrency( uniqueCustomers.size);
+            document.getElementById('rep-items-count').innerText = formatCurrency (totalItemsSold);
+
+            // 5. عرض جدول المنتجات مرتباً من الأكثر مبيعاً للأقل
+            const tbody = document.getElementById('report-table-body');
+            tbody.innerHTML = '';
+
+            let sortedProducts = Object.entries(productSummary).sort((a, b) => b[1].revenue - a[1].revenue);
+
+            if (sortedProducts.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#7f8c8d;">لا توجد مبيعات في هذه الفترة.</td></tr>`;
+            } else {
+         sortedProducts.forEach(([name, data]) => {
+    tbody.innerHTML += `
+        <tr>
+            <td><strong>${name}</strong></td>
+            <td style="text-align: center; direction: ltr;">
+                <span style="font-size:14px; font-weight:bold; color:#2c3e50;">${data.qty}</span> 
+            </td>
+            <td style="text-align: center; direction: ltr;">
+                <small style="font-size:14px; font-weight:bold; color:#2c3e50;">${formatCurrency(data.price)}</small>
+            </td>
+            <td style="color:#27ae60; font-weight:bold;">${formatCurrency(data.revenue)}</td>
+        </tr>
+    `;
+});
+            }
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('stats-grid').style.display = 'grid';
+            document.getElementById('table-container').style.display = 'block';
+        }
+        // تشغيل التقرير الافتراضي (اليوم)
+        loadReport('today', null);
+    </script>
+</body>
+</html>

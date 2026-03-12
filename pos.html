@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="notranslate">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#34495e">
+    <title>نقطة البيع - Mobile POS</title>
+    <link rel="stylesheet" href="css/shared.css">
+    <link rel="stylesheet" href="css/pos.css">
+    <link rel="stylesheet" href="css/alert.css">
+</head>
+<body>
+    <!-- الهيدر الرئيسي -->
+    <header style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #2c3e50; color: white;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span onclick="toggleSidebar()" style="font-size: 24px; cursor: pointer;">☰</span>
+            <h2 style="margin:0; font-size: 1.1rem;">📱 نقطة البيع</h2>
+        </div>
+        <!-- أيقونة السلة - رابط لصفحة السلة المنفصلة -->
+        <a href="cart.html" class="cart-icon" style="position: relative; cursor: pointer; text-decoration: none; color: white;">
+            🛒 <span id="cart-count" style="position: absolute; top: -8px; left: -8px; background: #e74c3c; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px;">0</span>
+        </a>
+    </header>
+
+    <!-- القائمة الجانبية -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="user-profile" style="display: flex; align-items: center; gap: 10px; padding: 20px;">
+                <div class="user-avatar" style="width: 45px; height: 45px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center;">👤</div>
+                <div class="user-info">
+                    <h3 id="sidebar-username" style="margin:0; font-size:14px; color: white;">تحميل...</h3>
+                    <span style="font-size: 11px; color: #2ecc71;">متصل الآن</span>
+                </div>
+            </div>
+        </div>
+        <div class="sidebar-links">
+            <div style="padding: 10px 20px; font-size: 11px; color: #95a5a6; font-weight: bold; border-bottom: 1px solid #eee;">إدارة البيانات</div>
+            <a href="products.html" class="nav-link">📦 المنتجات</a>
+            <a href="categories.html" class="nav-link">🗂️ الأصناف</a>
+            <a href="customers.html" class="nav-link">👥 العملاء</a>
+            <a href="users.html" class="nav-link">👤 الموظفين</a>
+            <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
+            <a href="#" onclick="logout()" class="nav-link" style="color: #e74c3c;">🚪 تسجيل الخروج</a>
+        </div>
+    </div>
+
+    <!-- القائمة السفلية -->
+    <nav class="bottom-nav">
+        <a href="dashboard.html" class="b-nav-item">🏠<br>الرئيسية</a>
+        <a href="pos.html" class="b-nav-item active">📱<br>نقطة البيع</a>
+        <a href="orders.html" class="b-nav-item">🧾<br>الطلبات</a>
+        <a href="reports.html" class="b-nav-item">📊<br>التقارير</a>
+    </nav>
+
+    <!-- منطقة التحكم: اختيار العميل والبحث -->
+    <div class="controls-area">
+        <select id="customer-select">
+            <option value="">-- اختر العميل (زبون نقدي) --</option>
+        </select>
+        <input type="text" id="search-input" placeholder="🔍 ابحث بالاسم أو امسح الباركود..." onkeyup="handleSearch(event)" autofocus>
+    </div>
+
+    <!-- أزرار التصنيفات -->
+    <div class="categories-scroll" id="categories-container">
+        <button class="cat-btn active" onclick="filterByCategory('all', this)">الكل</button>
+    </div>
+
+    <!-- منطقة تحميل المنتجات -->
+    <div id="loading">جاري تحميل البيانات...</div>
+    <div id="product-grid" class="product-grid"></div>
+
+    <!-- تضمين ملفات JavaScript -->
+    <script src="js/auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/UserManager.js"></script>
+    <script src="js/alert.js"></script>
+    <script src="js/utils.js"></script>
+    <script>
+        // ========================
+        // المتغيرات العامة
+        // ========================
+        let allProducts = [];              // جميع المنتجات المسترجعة من Supabase
+        let currentCategory = 'all';       // التصنيف الحالي المحدد
+
+        // ========================
+        // تهيئة الصفحة
+        // ========================
+        async function initPOS() {
+            await fetchCustomers();
+            await fetchCategories();
+            await fetchProducts();
+            document.getElementById('loading').style.display = 'none';
+            updateCartCount(); // تحديث عداد السلة عند التحميل
+        }
+
+        // ========================
+        // جلب البيانات من Supabase
+        // ========================
+        async function fetchCustomers() {
+            const { data: customers } = await supabaseClient.from('customers').select('*');
+            if (customers) {
+                const select = document.getElementById('customer-select');
+                customers.forEach(cust => {
+                    select.innerHTML += `<option value="${cust.id}">${cust.name} (${cust.phone || 'بدون رقم'})</option>`;
+                });
+
+                // استعادة آخر عميل مختار من localStorage
+                const savedCustomerId = localStorage.getItem('selected_customer_id');
+                if (savedCustomerId) {
+                    select.value = savedCustomerId;
+                }
+
+                // حفظ اختيار العميل عند التغيير
+                select.addEventListener('change', function(e) {
+                    const selected = e.target.options[e.target.selectedIndex];
+                    const customerId = selected.value;
+                    const customerName = customerId ? selected.text.split('(')[0].trim() : '';
+                    localStorage.setItem('selected_customer_id', customerId);
+                    localStorage.setItem('selected_customer_name', customerName);
+                });
+            }
+        }
+
+        async function fetchCategories() {
+            const { data: categories } = await supabaseClient.from('categories').select('*');
+            if (categories) {
+                const container = document.getElementById('categories-container');
+                categories.forEach(cat => {
+                    container.innerHTML += `<button class="cat-btn" onclick="filterByCategory(${cat.id}, this)">${cat.name}</button>`;
+                });
+            }
+        }
+
+        async function fetchProducts() {
+            const { data: products, error } = await supabaseClient.from('products').select('*');
+            if (error) {
+                document.getElementById('loading').innerText = "حدث خطأ في تحميل المنتجات";
+                return;
+            }
+            allProducts = products;
+            renderProducts(allProducts);
+        }
+
+        // ========================
+        // عرض المنتجات في الشبكة
+        // ========================
+        function renderProducts(productsToRender) {
+            const gridDiv = document.getElementById('product-grid');
+            gridDiv.innerHTML = '';
+            
+            if (productsToRender.length === 0) {
+                gridDiv.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #7f8c8d;">لا توجد منتجات مطابقة.</p>';
+                return;
+            }
+
+            productsToRender.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.onclick = () => addToCart(product.id, product.name, product.price, product.stock_quantity);
+                card.innerHTML = `
+                    <h3>${product.name}</h3>
+                    <p>$${product.price}</p>
+                    <small style="color:${product.stock_quantity > 0 ? '#bdc3c7' : '#e74c3c'}; font-size:11px;">
+                        ${product.stock_quantity > 0 ? 'متوفر: ' + product.stock_quantity : '❌ نفذت الكمية'}
+                    </small>
+                `;
+                gridDiv.appendChild(card);
+            });
+        }
+
+        // ========================
+        // وظائف السلة (باستخدام localStorage)
+        // ========================
+        function addToCart(id, name, price, stock) {
+            if (stock <= 0) {
+                alert("عذراً، هذا المنتج نفذ من المخزن!");
+                return;
+            }
+
+            // جلب السلة الحالية من localStorage
+            let cart = JSON.parse(localStorage.getItem('pos_cart')) || [];
+            const existingItem = cart.find(item => item.id === id);
+
+            if (existingItem) {
+                if (existingItem.quantity >= stock) {
+                    alert("لا توجد كمية كافية في المخزن لتغطية طلبك!");
+                    return;
+                }
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ id, name, price, quantity: 1, stock: stock });
+            }
+
+            // حفظ السلة في localStorage
+            localStorage.setItem('pos_cart', JSON.stringify(cart));
+            updateCartCount();
+            alert("تمت إضافة المنتج إلى السلة");
+        }
+
+        // تحديث عداد السلة
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('pos_cart')) || [];
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cart-count').innerText = totalItems;
+        }
+
+        // ========================
+        // التصفية والبحث
+        // ========================
+        function filterByCategory(catId, btnElement) {
+            currentCategory = catId;
+            document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+            applyFilters();
+        }
+
+        function normalizeArabic(text) {
+            if (!text) return '';
+            return String(text).replace(/[أإآا]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').toLowerCase();
+        }
+
+        function handleSearch(event) {
+            const rawSearchTerm = event.target.value.trim();
+            const searchTerm = normalizeArabic(rawSearchTerm);
+
+            // إذا كان Enter ووجدنا باركود مطابق
+            if (event.key === 'Enter' && rawSearchTerm !== '') {
+                const matchedProduct = allProducts.find(p => p.barcode === rawSearchTerm);
+                if (matchedProduct) {
+                    addToCart(matchedProduct.id, matchedProduct.name, matchedProduct.price, matchedProduct.stock_quantity);
+                    event.target.value = ''; // تفريغ مربع البحث
+                    applyFilters();
+                    return;
+                }
+            }
+            
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const rawTerm = document.getElementById('search-input').value.trim();
+            const searchTerm = normalizeArabic(rawTerm);
+            let filtered = allProducts;
+
+            if (currentCategory !== 'all') {
+                filtered = filtered.filter(p => p.category_id == currentCategory);
+            }
+
+            if (searchTerm !== '') {
+                filtered = filtered.filter(p => 
+                    normalizeArabic(p.name).includes(searchTerm) || 
+                    (p.barcode && p.barcode.includes(rawTerm))
+                );
+            }
+            renderProducts(filtered);
+        }
+
+        // ========================
+        // بدء التطبيق
+        // ========================
+        (function() {
+            // تحديث اسم المستخدم في الشريط الجانبي
+            const sidebarUsername = document.getElementById('sidebar-username');
+            if (sidebarUsername) {
+                sidebarUsername.innerText = localStorage.getItem('username') || 'إسماعيل';
+            }
+
+            // تهيئة مدير المستخدم
+            const userManager = new UserManager();
+
+            // بدء تحميل البيانات
+            initPOS();
+        })();
+    </script>
+</body>
+</html>

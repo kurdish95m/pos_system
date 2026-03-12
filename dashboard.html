@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="notranslate">
+    <title>الرئيسية - Mobile POS</title>
+    
+    <link rel="stylesheet" href="css/shared.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/alert.css">
+</head>
+<body>
+
+		<header style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #2c3e50; color: white; position: sticky; top: 0; z-index: 1000;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <span onclick="toggleSidebar()" style="font-size: 24px; cursor: pointer; padding: 5px;">☰</span>
+        <h2 style="margin:0; font-size: 1.1rem;">📊 لوحة القيادة</h2>
+    </div>
+    <div id="header-actions">
+        <div id="user-greeting" style="font-size: 0.8rem; opacity: 0.8;"></div>
+    </div>
+</header>
+	<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header" style="background: #34495e; padding: 30px 20px; color: white;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="width: 50px; height: 50px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
+            <div>
+                <h3 id="side-user-name" style="margin:0; font-size: 16px;">إسماعيل</h3>
+                <span style="font-size: 12px; color: #2ecc71;">● مدير النظام</span>
+            </div>
+        </div>
+    </div>
+    <div class="sidebar-links" style="padding: 15px 0;">
+        <div style="padding: 10px 25px; font-size: 11px; color: #95a5a6; font-weight: bold;">إدارة البيانات</div>
+        <a href="products.html" class="nav-link">📦 المنتجات</a>
+        <a href="categories.html" class="nav-link">🗂️ الأصناف</a>
+        <a href="customers.html" class="nav-link">👥 العملاء</a>
+        <a href="users.html" class="nav-link">👤 المستخدمين (الموظفين)</a>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+        <a href="#" onclick="logout()" class="nav-link" style="color: #e74c3c;">🚪 تسجيل الخروج</a>
+    </div>
+</div>
+
+    <div id="loading">جاري حساب الإحصائيات...</div>
+    <div class="dashboard-container" id="dashboard-content" style="display: none;">
+        
+        <div class="stat-card sales">
+            <h3>إجمالي المبيعات</h3>
+            <div class="value" id="total-sales">$0.00</div>
+        </div>
+
+        <div class="stat-card orders">
+            <h3>عدد الطلبات</h3>
+            <div class="value" id="total-orders">0</div>
+        </div>
+
+        <div class="stat-card products">
+            <h3>المنتجات المسجلة</h3>
+            <div class="value" id="total-products">0</div>
+        </div>
+
+        <div class="stat-card customers">
+            <h3>العملاء المسجلين</h3>
+            <div class="value" id="total-customers">0</div>
+        </div>
+
+    </div>
+	<nav class="bottom-nav" style="position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; background: white; padding: 10px 0; border-top: 1px solid #eee; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000;">
+    <a href="dashboard.html" class="b-nav-item active">🏠<br>الرئيسية</a>
+    <a href="pos.html" class="b-nav-item">📱<br>نقطة البيع</a>
+    <a href="orders.html" class="b-nav-item">🧾<br>الطلبات</a>
+    <a href="reports.html" class="b-nav-item">📊<br>التقارير</a>
+</nav>
+    <script src="js/alert.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/UserManager.js"></script> <!-- تمت الإضافة -->
+    <script>
+        async function fetchDashboardStats() {
+            try {
+                // 1. جلب بيانات المبيعات والطلبات
+                const { data: orders, error: ordersError } = await supabaseClient
+                    .from('orders')
+                    .select('total_amount');
+                
+                if (ordersError) throw ordersError;
+
+                const totalOrders = orders.length;
+                const totalSales = orders.reduce((sum, order) => sum + parseFloat(order.total_amount), 0);
+
+                // 2. جلب عدد المنتجات
+                const { count: productsCount, error: productsError } = await supabaseClient
+                    .from('products')
+                    .select('*', { count: 'exact', head: true });
+
+                if (productsError) throw productsError;
+
+                // 3. جلب عدد العملاء
+                const { count: customersCount, error: customersError } = await supabaseClient
+                    .from('customers')
+                    .select('*', { count: 'exact', head: true });
+
+                if (customersError) throw customersError;
+
+                // تحديث واجهة المستخدم
+                document.getElementById('total-sales').innerText = `$${totalSales.toFixed(2)}`;
+                document.getElementById('total-orders').innerText = totalOrders;
+                document.getElementById('total-products').innerText = productsCount || 0;
+                document.getElementById('total-customers').innerText = customersCount || 0;
+
+                // إخفاء التحميل وإظهار الكروت
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('dashboard-content').style.display = 'grid';
+
+            } catch (error) {
+                console.error("خطأ في جلب الإحصائيات:", error);
+                document.getElementById('loading').innerText = "حدث خطأ أثناء تحميل البيانات.";
+            }
+        }
+        fetchDashboardStats();
+    </script>
+</body>
+</html>
