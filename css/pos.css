@@ -1,14 +1,28 @@
 /* ================================
-   POS PAGE STYLE
+   1. الإعدادات العامة (تثبيت الصفحة)
 ================================ */
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* يمنع الصفحة كاملة من التحرك عشوائياً */
+    font-family: sans-serif;
+    background-color: #f8f9fa;
+}
 
-/* منطقة التحكم */
+/* ================================
+   2. منطقة التحكم (ثابتة)
+================================ */
 .controls-area {
-    padding: 10px 15px 5px;
+    flex-shrink: 0; /* يمنع القسم من الانكماش */
+    padding: 10px 15px;
     background: #f4f6f8;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    border-bottom: 1px solid #ddd;
 }
 
 .controls-area select,
@@ -22,28 +36,23 @@
     font-family: inherit;
 }
 
-.controls-area input:focus,
-.controls-area select:focus {
-    outline: none;
-    border-color: #3498db;
-}
-
 /* ================================
-   CATEGORY SCROLL
+   3. التصنيفات (سكرول عرضي فقط - ثابتة عمودياً)
 ================================ */
-
 .categories-scroll {
+    flex-shrink: 0; /* لا تتحرك مع سكرول المنتجات */
     display: flex;
     overflow-x: auto;
+    overflow-y: hidden; /* منع الحركة للأعلى والأسفل */
     gap: 10px;
     padding: 10px 15px;
     background: #fff;
     border-bottom: 1px solid #eee;
-    scrollbar-width: none;
+    scrollbar-width: none; /* إخفاء السكرول بار في فايرفوكس */
 }
 
 .categories-scroll::-webkit-scrollbar {
-    display: none;
+    display: none; /* إخفاء السكرول بار في كروم وسفاري */
 }
 
 .cat-btn {
@@ -65,88 +74,76 @@
 }
 
 /* ================================
-   PRODUCT GRID
+   4. شبكة المنتجات (المنطقة المتحركة الوحيدة)
 ================================ */
-
 .product-grid {
+    flex-grow: 1;
+    overflow-y: auto;
     display: grid;
+    /* التعديل هنا: استخدام align-content لبدء العناصر من الأعلى */
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 15px;
+    grid-auto-rows: min-content; /* يجعل الصفوف تأخذ حجم محتواها فقط */
+    align-content: start;        /* يمنع العناصر من التمدد لتعبئة الطول */
+    gap: 12px;
     padding: 15px;
+    -webkit-overflow-scrolling: touch;
     padding-bottom: 90px;
 }
 
 .product-card {
     background: white;
-    padding: 20px;
-    border-radius: 10px;
+    padding: 15px;
+    border-radius: 12px;
     text-align: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    cursor: pointer;
-    transition: 0.15s;
-    border: 1px solid transparent;
-}
-
-.product-card:hover {
-    transform: translateY(-3px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+    
+    /* لضمان أن الكارت نفسه لا يطول بشكل تلقائي */
+    height: fit-content; 
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .product-card:active {
     transform: scale(0.95);
+    background-color: #f1f9ff;
     border-color: #3498db;
 }
 
 .product-card h3 {
-    margin: 10px 0 5px;
-    font-size: 15px;
+    margin: 5px 0;
+    font-size: 14px;
     color: #2c3e50;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* عرض سطرين فقط للاسم */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .product-card p {
-    margin: 0;
+    margin: 5px 0 0;
     color: #27ae60;
     font-weight: bold;
+    font-size: 15px;
 }
 
 /* ================================
-   CART ICON
+   5. القائمة السفلية (ثابتة)
 ================================ */
-
-.cart-icon {
-    cursor: pointer;
-    font-size: 18px;
-    background: #34495e;
-    padding: 6px 10px;
-    border-radius: 6px;
-    position: relative;
-}
-
-#cart-count {
-    position: absolute;
-    top: -6px;
-    left: -6px;
-    background: #e74c3c;
-    color: white;
-    border-radius: 50%;
-    padding: 2px 6px;
-    font-size: 10px;
+.bottom-nav {
+    flex-shrink: 0;
+    background: #fff;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    z-index: 100;
 }
 
 /* ================================
-   CART MODAL
+   6. السلة والمودال
 ================================ */
-
-.cart-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.4);
-    display: none;
-    z-index: 20;
-}
-
 .cart-modal {
     position: fixed;
     bottom: -100%;
@@ -156,11 +153,10 @@
     border-radius: 20px 20px 0 0;
     padding: 20px;
     transition: bottom 0.3s ease-in-out;
-    z-index: 21;
-    max-height: 85vh;
+    z-index: 1000;
+    max-height: 80vh;
     display: flex;
     flex-direction: column;
-	padding-bottom: 70px;  /* مساحة للقائمة السفلية */
     box-sizing: border-box;
 }
 
@@ -168,160 +164,27 @@
     bottom: 0;
 }
 
-/* ================================
-   CART HEADER
-================================ */
-
-.cart-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-    margin-bottom: 10px;
-}
-
-.close-btn {
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    color: #e74c3c;
-}
-
-/* ================================
-   CART ITEMS
-================================ */
-
 .cart-items-container {
-	    max-height: 60vh;  /* أو حسب رغبتك */
     overflow-y: auto;
     flex-grow: 1;
-    margin-bottom: 15px;
-}
-
-.cart-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.cart-item-info h4 {
-    margin: 0 0 5px 0;
-    font-size: 14px;
-}
-
-.cart-item-info p {
-    margin: 0;
-    color: #7f8c8d;
-    font-size: 12px;
 }
 
 /* ================================
-   QUANTITY BUTTONS
+   7. تحسينات الموبايل (شاشات صغيرة)
 ================================ */
-
-.qty-controls {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.qty-btn {
-    background: #ecf0f1;
-    border: none;
-    width: 30px;
-    height: 30px;
-    border-radius: 6px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.qty-btn:hover {
-    background: #dfe6e9;
-}
-
-/* ================================
-   CART TOTAL
-================================ */
-
-.cart-total {
-    font-size: 18px;
-    font-weight: bold;
-    text-align: left;
-    margin-bottom: 15px;
-    color: #2c3e50;
-}
-
-/* ================================
-   BUTTONS
-================================ */
-
-.checkout-btn {
-    background: #27ae60;
-    color: white;
-    border: none;
-    padding: 15px;
-    width: 100%;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-bottom: 5px;
-    transition: 0.2s;
-	 display: block; 
-}
-
-.checkout-btn:hover {
-    background: #219150;
-}
-
-.print-btn-cart {
-    background: #34495e;
-    color: white;
-    border: none;
-    padding: 15px;
-    width: 100%;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    display: none;
-}
-
-.print-btn-cart:hover {
-    background: #2c3e50;
-}
-
-/* ================================
-   LOADING
-================================ */
-
-#loading {
-    text-align: center;
-    padding: 20px;
-    color: #7f8c8d;
-}
-
-/* ================================
-   MOBILE OPTIMIZATION
-================================ */
-
-@media (max-width: 600px) {
-
+@media (max-width: 400px) {
     .product-grid {
-        grid-template-columns: repeat(2,1fr);
+        grid-template-columns: repeat(2, 1fr); /* عنصرين في الصف دائماً */
+        gap: 8px;
+        padding: 10px;
     }
-
+    
     .product-card {
-        padding: 15px;
+        padding: 10px;
+        min-height: 100px;
     }
 
-    .cart-modal {
-        padding: 15px;
+    .product-card h3 {
+        font-size: 13px;
     }
-
 }
