@@ -64,3 +64,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+
+
+
+// js/auth.js (إضافة هذه الدوال)
+// إخفاء أزرار التعديل والحذف إذا كان المستخدم كاشير
+function applyRoleBasedVisibility() {
+    const userRole = localStorage.getItem("user_role");
+    if (userRole !== "admin") {
+        // إخفاء جميع الأزرار التي تحمل class "action-btn" (تعديل وحذف)
+        document.querySelectorAll('.action-btn').forEach(btn => btn.style.display = 'none');
+        //也可以在必要的时候隐藏 statement-btn 或其它 admin 按钮
+    }
+}
+// دالة hideAdminFeatures القديمة يمكن أن تستدعي applyRoleBasedVisibility
+function hideAdminFeatures() {
+    applyRoleBasedVisibility();
+}

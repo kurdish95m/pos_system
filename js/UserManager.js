@@ -57,7 +57,7 @@ class UserManager {
     logout() {
         if (confirm("هل تريد تسجيل الخروج؟")) {
             localStorage.clear();
-            window.location.href = "login.html";
+            window.location.href = "index.html";
         }
     }
 }
