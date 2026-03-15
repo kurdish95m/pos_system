@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	  <meta name="google" content="notranslate">
     <title>سلة المشتريات - Mobile POS</title>
-    <link rel="stylesheet" href="css/shared.css">
-    <link rel="stylesheet" href="css/pos.css">
-    <link rel="stylesheet" href="css/alert.css">
+ <link rel="stylesheet" href="css/style.css">
     <style>
         /* تنسيق خاص بصفحة السلة */
         body {
@@ -43,15 +42,15 @@
         .cart-items {
             list-style: none;
             padding: 0;
-            margin: 0 0 20px;
-            max-height: 60vh;
+            margin: 0 0 15px;
+            max-height: 45vh;
             overflow-y: auto;
         }
         .cart-item {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            gap: 10px;
+            gap: 5px;
             padding: 15px 0;
             border-bottom: 1px solid #f0f0f0;
         }
@@ -79,10 +78,15 @@
 			font-weight: bold;
         }
         .item-total {
-            font-weight: bold;
-            color: #27ae60;
-            min-width: 80px;
-            text-align: left;
+  
+            border-radius: 6px;
+			width: 80px;
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 15px;
+			font-weight: bold;
         }
         .cart-total {
             font-size: 20px;
@@ -123,7 +127,7 @@
         .delete-item {
             background: none;
             border: none;
-            font-size: 20px;
+            font-size: 15px;
             cursor: pointer;
             color: #e74c3c;
             padding: 0 5px;
@@ -135,9 +139,6 @@
         <div style="display: flex; align-items: center; gap: 12px;">
             <span onclick="window.location.href='pos.html'" style="font-size: 24px; cursor: pointer;">⬅️</span>
             <h2 style="margin:0; font-size: 1.1rem;">🛒 سلة المشتريات</h2>
-        </div>
-        <div id="header-actions">
-            <div id="user-greeting" style="font-size: 0.8rem; opacity: 0.8;"></div>
         </div>
     </header>
 
@@ -152,7 +153,7 @@
         </div>
 
         <div class="cart-total" id="cart-total-display">
-            الإجمالي: $<span id="total-price">0.00</span>
+            الإجمالي:  د.ع<span id="total-price">0.00 </span>
         </div>
 
         <button class="checkout-btn" id="checkout-btn" onclick="checkout()">✅ إتمام الطلب</button>
@@ -212,7 +213,7 @@
                     </div>
 					<input type="number" class="cart-item-qty-input qty-color" value="${item.quantity}" min="1" data-index="${index}" data-field="quantity" onchange="updateItem(this)">
                     <input type="number" class="cart-item-price-input price-color" value="${item.price}" min="0" step="0.01" data-index="${index}" data-field="price" onchange="updateItem(this)">
-                    <div class="item-total">$${formatCurrency(itemTotal)}</div>
+                    <div class="item-total">${formatCurrency(itemTotal)}</div>
                     <button class="delete-item" onclick="removeItem(${index})" title="حذف">❌</button>
                 `;
                 container.appendChild(div);
@@ -375,7 +376,7 @@
                         ${lastPrintedOrder.items.map(i => `<tr><td>${i.name}</td><td style="text-align:center;">${i.quantity}</td><td>$${(i.quantity * i.price).toFixed(2)}</td></tr>`).join('')}
                     </table>
                     <div class="divider"></div>
-                    <div class="total-section">الإجمالي: $${lastPrintedOrder.total.toFixed(2)}</div>
+                    <div class="total-section">الإجمالي: ${formatCurrencyPrice(lastPrintedOrder.total.toFixed(2))}</div>
                     <div class="divider"></div>
                     <div class="footer"><p>شكراً لزيارتكم!</p></div>
                 </body>
@@ -390,7 +391,6 @@
 
         // بدء التشغيل
         renderCart();
-        const userManager = new UserManager();
     </script>
 </body>
 </html>

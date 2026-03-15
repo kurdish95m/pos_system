@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta name="google" content="notranslate">
     <title>إدارة المنتجات - Mobile POS</title>
-    <link rel="stylesheet" href="css/shared.css">
-    <link rel="stylesheet" href="css/products.css">
-	<link rel="stylesheet" href="css/alert.css">
+ <link rel="stylesheet" href="css/style.css">
 	
 	<meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -53,6 +51,7 @@
         <a href="categories.html" class="nav-link">🗂️ الأصناف</a>
         <a href="customers.html" class="nav-link">👥 العملاء</a>
         <a href="users.html" class="nav-link">👤 المستخدمين (الموظفين)</a>
+		<a href="settings.html" class="nav-link">⚙️ الإعدادات</a>
         <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
         <a href="#" onclick="logout()" class="nav-link" style="color: #e74c3c;">🚪 تسجيل الخروج</a>
     </div>
@@ -114,7 +113,8 @@
         </div>
     </div>
 
-    <script src="js/auth.js"></script>
+    <script src="js/utils.js"></script>
+	  <script src="js/auth.js"></script>
 	    <script src="js/alert.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
@@ -128,6 +128,8 @@
         async function initPage() {
             await fetchCategories();
             await fetchInventory();
+			// بعد إضافة العناصر للـ DOM
+          applyRoleBasedVisibility();
         }
 
         // 2. جلب التصنيفات لتعبئة القائمة المنسدلة
@@ -194,7 +196,7 @@
                             <p style="color:#3498db; font-size:11px;">📂 ${categoryName}</p>
                         </div>
                         <div class="product-price-stock">
-                            <span class="price">$${product.price}</span>
+                            <span class="price">${formatCurrency(product.price)}</span>
                             <span class="stock">الكمية: ${product.stock_quantity}</span>
                         </div>
                     </div>

@@ -6,9 +6,7 @@
     <meta name="google" content="notranslate">
     <title>تقارير المبيعات - Mobile POS</title>
     
-    <link rel="stylesheet" href="css/shared.css">
-    <link rel="stylesheet" href="css/alert.css">
-    <link rel="stylesheet" href="css/reports.css">
+ <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
@@ -38,6 +36,7 @@
         <a href="categories.html" class="nav-link">🗂️ الأصناف</a>
         <a href="customers.html" class="nav-link">👥 العملاء</a>
         <a href="users.html" class="nav-link">👤 المستخدمين (الموظفين)</a>
+		<a href="settings.html" class="nav-link">⚙️ الإعدادات</a>
         <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
         <a href="#" onclick="logout()" class="nav-link" style="color: #e74c3c;">🚪 تسجيل الخروج</a>
     </div>
@@ -68,7 +67,7 @@
     <div class="stats-grid" id="stats-grid" style="display: none;">
         <div class="stat-box sales">
             <h4>إجمالي الإيرادات</h4>
-            <div class="val" id="rep-total-sales">$0.00</div>
+            <div class="val" id="rep-total-sales">0.00</div>
         </div>
         <div class="stat-box">
             <h4>عدد الفواتير</h4>
@@ -191,10 +190,10 @@
 
             // 4. عرض ملخص الأرقام
        // ابحث عن هذا السطر واستبدله
-              document.getElementById('rep-total-sales').innerText = formatCurrency(totalSales);
-            document.getElementById('rep-orders-count').innerText = formatCurrency(totalOrders);
-            document.getElementById('rep-customers-count').innerText =formatCurrency( uniqueCustomers.size);
-            document.getElementById('rep-items-count').innerText = formatCurrency (totalItemsSold);
+              document.getElementById('rep-total-sales').innerText = formatCurrencyPrice(totalSales);
+            document.getElementById('rep-orders-count').innerText = totalOrders;
+            document.getElementById('rep-customers-count').innerText = uniqueCustomers.size;
+            document.getElementById('rep-items-count').innerText =  totalItemsSold;
 
             // 5. عرض جدول المنتجات مرتباً من الأكثر مبيعاً للأقل
             const tbody = document.getElementById('report-table-body');

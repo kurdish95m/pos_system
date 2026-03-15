@@ -8,11 +8,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#34495e">
     <title>نقطة البيع - Mobile POS</title>
-    <link rel="stylesheet" href="css/shared.css">
-    <link rel="stylesheet" href="css/pos.css">
-    <link rel="stylesheet" href="css/alert.css">
+ <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="pos-layout">
     <!-- الهيدر الرئيسي -->
     <header style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #2c3e50; color: white;">
         <div style="display: flex; align-items: center; gap: 12px;">
@@ -43,6 +41,7 @@
             <a href="categories.html" class="nav-link">🗂️ الأصناف</a>
             <a href="customers.html" class="nav-link">👥 العملاء</a>
             <a href="users.html" class="nav-link">👤 الموظفين</a>
+			<a href="settings.html" class="nav-link">⚙️ الإعدادات</a>
             <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
             <a href="#" onclick="logout()" class="nav-link" style="color: #e74c3c;">🚪 تسجيل الخروج</a>
         </div>
@@ -164,7 +163,7 @@
                 card.onclick = () => addToCart(product.id, product.name, product.price, product.stock_quantity);
                 card.innerHTML = `
                     <h3>${product.name}</h3>
-                    <p>$${product.price}</p>
+                    <p>${formatCurrency(product.price)}</p>
                     <small style="color:${product.stock_quantity > 0 ? '#bdc3c7' : '#e74c3c'}; font-size:11px;">
                         ${product.stock_quantity > 0 ? 'متوفر: ' + product.stock_quantity : '❌ نفذت الكمية'}
                     </small>
@@ -199,7 +198,7 @@
             // حفظ السلة في localStorage
             localStorage.setItem('pos_cart', JSON.stringify(cart));
             updateCartCount();
-            alert("تمت إضافة المنتج إلى السلة");
+       
         }
 
         // تحديث عداد السلة

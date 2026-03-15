@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="google" content="notranslate">
     <title>إدارة العملاء - Mobile POS</title>
-    <link rel="stylesheet" href="css/shared.css">
-    <link rel="stylesheet" href="css/customers.css">
-	<link rel="stylesheet" href="css/alert.css">
+  <link rel="stylesheet" href="css/style.css">
 	
 	<meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -41,6 +39,7 @@
         <a href="categories.html" class="nav-link">🗂️ الأصناف</a>
         <a href="customers.html" class="nav-link">👥 العملاء</a>
         <a href="users.html" class="nav-link">👤 المستخدمين (الموظفين)</a>
+		<a href="settings.html" class="nav-link">⚙️ الإعدادات</a>
         <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
         <a href="#" onclick="logout()" class="nav-link" style="color: #e74c3c;">🚪 تسجيل الخروج</a>
     </div>
@@ -82,7 +81,6 @@
     <div id="loading">جاري تحميل بيانات العملاء...</div>
     <div id="customers-list" class="customers-list"></div>
 
-    <button class="fab-btn" onclick="openModal()">+</button>
 
     <!-- تم حذف شريط التنقل السفلي المكرر -->
 
@@ -107,6 +105,7 @@
     </div>
 
     <script src="js/auth.js"></script>
+	  <script src="js/utils.js"></script>
 	<script src="js/alert.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
@@ -313,7 +312,7 @@ if (!await confirm(`هل أنت متأكد من حذف العميل "${name}"؟\
                             <strong>رقم #${order.id}</strong><br>
                             <small style="color:#7f8c8d;">${date}</small>
                         </div>
-                        <div style="color:#27ae60; font-weight:bold;">$${order.total_amount.toFixed(2)}</div>
+                        <div style="color:#27ae60; font-weight:bold;">${formatCurrency(order.total_amount.toFixed(1))}</div>
                     </div>
                 `;
             }).join('');
@@ -321,7 +320,7 @@ if (!await confirm(`هل أنت متأكد من حذف العميل "${name}"؟\
             body.innerHTML = `
                 <div style="background:#f4f6f8; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center;">
                     <p style="margin:0 0 5px 0;">إجمالي مشتريات <strong>${customerName}</strong></p>
-                    <h2 style="margin:0; color:#2c3e50;">$${totalSpent.toFixed(2)}</h2>
+                    <h2 style="margin:0; color:#2c3e50;">${formatCurrency(totalSpent.toFixed(1))}</h2>
                     <p style="margin:5px 0 0 0; font-size:12px; color:#7f8c8d;">عدد الفواتير: ${orders.length}</p>
                 </div>
                 ${ordersHtml}

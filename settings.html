@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إعدادات المتجر - Mobile POS</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* أنماط خاصة بصفحة الإعدادات */
+        .settings-container {
+            max-width: 400px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        .save-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .save-btn:active {
+            transform: scale(0.98);
+        }
+		
+    </style>
+</head>
+<body>
+    <!-- الهيدر الرئيسي -->
+    <header>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span onclick="toggleSidebar()" style="font-size: 24px; cursor: pointer;">☰</span>
+            <h2>⚙️ إعدادات المتجر</h2>
+        </div>
+    </header>
+
+    <!-- القائمة الجانبية (Sidebar) -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="width: 50px; height: 50px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
+                <div>
+                    <h3 id="side-user-name" style="margin:0; font-size: 16px;">إسماعيل</h3>
+                    <span style="font-size: 12px; color: #2ecc71;">● مدير النظام</span>
+                </div>
+            </div>
+        </div>
+        <div class="sidebar-links">
+            <div style="padding: 10px 25px; font-size: 11px; color: #95a5a6; font-weight: bold;">إدارة البيانات</div>
+            <a href="products.html" class="nav-link">📦 المنتجات</a>
+            <a href="categories.html" class="nav-link">🗂️ الأصناف</a>
+            <a href="customers.html" class="nav-link">👥 العملاء</a>
+            <a href="users.html" class="nav-link">👤 المستخدمين (الموظفين)</a>
+            <a href="settings.html" class="nav-link">⚙️ الإعدادات</a>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+            <a href="#" onclick="logout()" class="nav-link" style="color: #e74c3c;">🚪 تسجيل الخروج</a>
+        </div>
+    </div>
+
+    <!-- القائمة السفلية -->
+    <nav class="bottom-nav">
+        <a href="dashboard.html" class="b-nav-item active">⚙️<br>الإعدادات</a>
+        <a href="pos.html" class="b-nav-item">📱<br>نقطة البيع</a>
+        <a href="orders.html" class="b-nav-item">🧾<br>الطلبات</a>
+        <a href="reports.html" class="b-nav-item">📊<br>التقارير</a>
+    </nav>
+
+    <!-- محتوى الصفحة -->
+    <div class="settings-container">
+        <h3 style="text-align: center;">تعديل إعدادات المتجر</h3>
+        <div id="loading" style="text-align:center;">جاري تحميل الإعدادات...</div>
+        <form id="settings-form" style="display: none;">
+            <div class="form-group">
+                <label>اسم المتجر</label>
+                <input type="text" id="store_name" placeholder="مثال: سوبر ماركت الأمانة">
+            </div>
+            <div class="form-group">
+                <label>رمز العملة</label>
+                <input type="text" id="currency_symbol" placeholder="مثال: د.ع" value="د.ع">
+            </div>
+            <div class="form-group">
+                <label>نسبة الضريبة (%)</label>
+                <input type="number" id="tax_rate" step="0.01" min="0" value="0">
+            </div>
+            <button type="button" class="save-btn" onclick="saveSettings()">حفظ الإعدادات</button>
+        </form>
+    </div>
+
+    <!-- السكربتات -->
+    <script src="js/auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/alert.js"></script>
+    <script>
+        // التحقق من أن المستخدم مدير
+        if (localStorage.getItem("user_role") !== "admin") {
+            alert("هذه الصفحة مخصصة للمدير فقط.");
+            window.location.href = "pos.html";
+        }
+
+        async function loadSettings() {
+            const { data, error } = await supabaseClient
+                .from('settings')
+                .select('*')
+                .maybeSingle(); // نفترض وجود صف واحد فقط
+
+            if (error) {
+                console.error(error);
+                document.getElementById('loading').innerText = 'خطأ في تحميل الإعدادات';
+                return;
+            }
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('settings-form').style.display = 'block';
+
+            if (data) {
+                document.getElementById('store_name').value = data.store_name || '';
+                document.getElementById('currency_symbol').value = data.currency_symbol || 'د.ع';
+                document.getElementById('tax_rate').value = data.tax_rate || 0;
+            }
+        }
+
+        async function saveSettings() {
+            const store_name = document.getElementById('store_name').value.trim();
+            const currency_symbol = document.getElementById('currency_symbol').value.trim();
+            const tax_rate = parseFloat(document.getElementById('tax_rate').value) || 0;
+
+            if (!store_name) {
+                alert('يرجى إدخال اسم المتجر');
+                return;
+            }
+
+            // التحقق من وجود سجل مسبق
+            const { data: existing } = await supabaseClient
+                .from('settings')
+                .select('id')
+                .maybeSingle();
+
+            let result;
+            if (existing) {
+                // تحديث
+                result = await supabaseClient
+                    .from('settings')
+                    .update({ store_name, currency_symbol, tax_rate })
+                    .eq('id', existing.id);
+            } else {
+                // إدراج
+                result = await supabaseClient
+                    .from('settings')
+                    .insert([{ store_name, currency_symbol, tax_rate }]);
+            }
+
+            if (result.error) {
+                alert('حدث خطأ أثناء الحفظ: ' + result.error.message);
+            } else {
+                alert('تم حفظ الإعدادات بنجاح');
+                // تحديث الإعدادات في localStorage لتستخدم فوراً
+                localStorage.setItem('store_settings', JSON.stringify({ store_name, currency_symbol, tax_rate }));
+            }
+        }
+
+        loadSettings();
+
+        // تحديث اسم المستخدم في القائمة الجانبية
+        const sideUserName = document.getElementById('side-user-name');
+        if (sideUserName) {
+            sideUserName.innerText = localStorage.getItem('username') || 'إسماعيل';
+        }
+    </script>
+</body>
+</html>

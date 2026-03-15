@@ -6,9 +6,7 @@
     <meta name="google" content="notranslate">
     <title>الطلبات - Mobile POS</title>
     
-    <link rel="stylesheet" href="css/shared.css">
-    <link rel="stylesheet" href="css/alert.css">
-    <link rel="stylesheet" href="css/orders.css">
+ <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 	<header style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #2c3e50; color: white; position: sticky; top: 0; z-index: 1000;">
@@ -38,6 +36,7 @@
         <a href="categories.html" class="nav-link">🗂️ الأصناف</a>
         <a href="customers.html" class="nav-link">👥 العملاء</a>
         <a href="users.html" class="nav-link">👤 المستخدمين (الموظفين)</a>
+		<a href="settings.html" class="nav-link">⚙️ الإعدادات</a>
         <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
         <a href="#" onclick="logout()" class="nav-link" style="color: #e74c3c;">🚪 تسجيل الخروج</a>
     </div>
@@ -91,7 +90,7 @@ function updateSummary(ordersArray) {
     
     document.getElementById('summary-box').innerHTML = `
         <span>🧾 الفواتير: ${totalOrders}</span>
-        <span>💰 الإجمالي: ${formatCurrency(totalAmount)}</span>
+        <span>💰 الإجمالي: ${formatCurrencyPrice(totalAmount)}</span>
     `;
 }
 
@@ -148,9 +147,7 @@ function updateSummary(ordersArray) {
                         <p>🧑‍💻 الكاشير: ${cashierName}</p>
                         <p>📅 ${date}</p>
                     </div>
-              <div class="order-total">
-    ${formatCurrency(order.total_amount)}
-</div>
+                    <div class="order-total">${formatCurrencyPrice(order.total_amount)}</div>
                 `;
                 listDiv.appendChild(item);
             });
@@ -206,6 +203,7 @@ let itemsHtml = items.map(i => `
     <tr>
         <td>${i.products?.name || 'منتج محذوف'}</td>
         <td style="text-align:center;">${i.quantity}</td>
+		<td style="text-align:center;">${formatCurrency(i.price_at_time)}</td>
         <td>${formatCurrency(i.quantity * i.price_at_time)}</td>
     </tr>
 `).join('');
@@ -214,18 +212,23 @@ let itemsHtml = items.map(i => `
             document.getElementById('invoice-body').innerHTML = `
                 <div class="invoice-details-top">
                     <p><strong>رقم الفاتورة:</strong> #${orderId}</p>
-                    <p><strong>العميل:</strong> ${cName}</p>
+                    <p><strong>العميل:</strong> ${cName}</p> 
                     <p><strong>الكاشير:</strong> ${cCashier}</p> <p><strong>التاريخ:</strong> ${date}</p>
                 </div>
                 <div class="invoice-items">
                     <table>
                         <thead>
-                            <tr><th>الصنف</th><th style="text-align:center;">الكمية</th><th>المجموع</th></tr>
+                            <tr>
+							<th>الصنف</th>
+							<th style="text-align:center;">الكمية</th>
+							<th style="text-align:center;">السعر</th>
+							<th>المجموع</th>
+							</tr>
                         </thead>
                         <tbody>${itemsHtml}</tbody>
                     </table>
                 </div>
-                <div class="invoice-total">الإجمالي: ${formatCurrency(total)}</div>
+                <div class="invoice-total">الإجمالي: ${formatCurrencyPrice(total)}</div>
             `;
         }
 
@@ -264,11 +267,17 @@ let itemsHtml = items.map(i => `
                     </div>
                     <div class="divider"></div>
                     <table>
-                        <tr><th style="width: 50%;">الصنف</th><th style="width: 20%; text-align:center;">كمية</th><th style="width: 30%;">السعر</th></tr>
+                        <tr>
+						<th style="width: 30%;">الصنف</th>
+						<th style="width: 15%; text-align:center;">كمية</th>
+						<th style="width: 27.5%;">السعر</th>
+						<th style="width: 27.5%;">المجموع</th>
+						</tr>
                         ${currentItemsForPrint.map(i => `
                             <tr>
                                 <td>${i.products?.name || 'محذوف'}</td>
                                 <td style="text-align:center;">${i.quantity}</td>
+								<td style="text-align:center;">${formatCurrency(i.price_at_time)}</td>
                                 <td>${formatCurrency(i.quantity * i.price_at_time)}</td>
                             </tr>
                         `).join('')}

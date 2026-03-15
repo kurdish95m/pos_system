@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
     <title>إدارة الأصناف - Mobile POS</title>
-    <link rel="stylesheet" href="css/shared.css">
-    <link rel="stylesheet" href="css/products.css"> <link rel="stylesheet" href="css/alert.css">
+ <link rel="stylesheet" href="css/style.css">
     
     <style>
         /* تخصيصات إضافية بسيطة */
@@ -49,6 +48,7 @@
         <a href="categories.html" class="nav-link">🗂️ الأصناف</a>
         <a href="customers.html" class="nav-link">👥 العملاء</a>
         <a href="users.html" class="nav-link">👤 المستخدمين (الموظفين)</a>
+		<a href="settings.html" class="nav-link">⚙️ الإعدادات</a>
         <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
         <a href="#" onclick="logout()" class="nav-link" style="color: #e74c3c;">🚪 تسجيل الخروج</a>
     </div>
@@ -97,9 +97,9 @@
         <input type="text" id="cat-name" placeholder="اسم الصنف (مطلوب)" style="padding:10px; border:1px solid #ccc; border-radius:5px;">
         <textarea id="cat-desc" rows="3" placeholder="وصف الصنف (اختياري)"></textarea>
         
-        <div class="modal-btns" style="display:flex; gap:10px; margin-top:10px;">
-            <button class="save-btn" onclick="saveCategory()" style="flex:1; padding:12px; background:#27ae60; color:white; border:none; border-radius:8px; font-weight:bold;">حفظ</button>
-            <button class="cancel-btn" onclick="closeModal()" style="flex:1; padding:12px; background:#95a5a6; color:white; border:none; border-radius:8px; font-weight:bold;">إلغاء</button>
+		 <div class="modal-btns">
+            <button class="save-btn" onclick="saveCategory()">حفظ</button>
+            <button class="cancel-btn" onclick="closeModal()">إلغاء</button>
         </div>
     </div>
 
