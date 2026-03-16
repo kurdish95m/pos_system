@@ -3,184 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	  <meta name="google" content="notranslate">
+    <meta name="google" content="notranslate">
     <title>سلة المشتريات - Mobile POS</title>
- <link rel="stylesheet" href="css/style.css">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- تخصيص بسيط للاتجاه RTL -->
     <style>
-        /* تنسيق خاص بصفحة السلة */
-        body {
-            background: #f4f6f8;
-            padding-bottom: 90px;
-        }
-        .cart-container {
-            max-width: 600px;
-            margin: 20px auto;
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .cart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 15px;
-            margin-bottom: 15px;
-        }
-        .cart-header h2 {
-            margin: 0;
-            color: #2c3e50;
-        }
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #e74c3c;
-        }
-        .cart-items {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 15px;
-            max-height: 45vh;
-            overflow-y: auto;
-        }
-        .cart-item {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 5px;
-            padding: 15px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        .cart-item-info {
-            flex: 2;
-            min-width: 120px;
-        }
-        .cart-item-info h4 {
-            margin: 0 0 5px;
-            font-size: 16px;
-        }
-        .cart-item-info p {
-            margin: 0;
-            color: #7f8c8d;
-            font-size: 12px;
-        }
-        .cart-item-price-input,
-        .cart-item-qty-input {
-            width: 80px;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            text-align: center;
-            font-size: 15px;
-			font-weight: bold;
-        }
-        .item-total {
-  
-            border-radius: 6px;
-			width: 80px;
-            padding: 6px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            text-align: center;
-            font-size: 15px;
-			font-weight: bold;
-        }
-        .cart-total {
-            font-size: 20px;
-            font-weight: bold;
-            text-align: left;
-            margin: 20px 0;
-            padding-top: 10px;
-            border-top: 2px dashed #ccc;
-        }
-        .checkout-btn, .continue-btn, .clear-btn {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-bottom: 10px;
-        }
-        .checkout-btn {
-            background: #27ae60;
-            color: white;
-        }
-        .continue-btn {
-            background: #3498db;
-            color: white;
-        }
-        .clear-btn {
-            background: #e74c3c;
-            color: white;
-        }
-		.qty-color{
-		            color: #e74c3c;
-		}
-		.price-color{
-		            color: #27ae60;
-		}
-        .delete-item {
-            background: none;
-            border: none;
-            font-size: 15px;
-            cursor: pointer;
-            color: #e74c3c;
-            padding: 0 5px;
-        }
+        body { font-family: 'Tajawal', sans-serif; }
+        .bottom-nav a { transition: all 0.2s; }
     </style>
 </head>
-<body>
-    <header style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #2c3e50; color: white;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <span onclick="window.location.href='pos.html'" style="font-size: 24px; cursor: pointer;">⬅️</span>
-            <h2 style="margin:0; font-size: 1.1rem;">🛒 سلة المشتريات</h2>
+<body class="bg-gray-100 pb-24">
+
+    <!-- الهيدر -->
+    <header class="flex justify-between items-center px-5 py-3 bg-[#2c3e50] text-white shadow-md">
+        <div class="flex items-center gap-3">
+            <span onclick="window.location.href='pos.html'" class="text-2xl cursor-pointer hover:opacity-80 transition">⬅️</span>
+            <h2 class="text-lg font-semibold">🛒 سلة المشتريات</h2>
         </div>
     </header>
 
-    <div class="cart-container">
-        <div class="cart-header">
-            <h2>المنتجات المضافة</h2>
-            <button class="close-btn" onclick="window.location.href='pos.html'">✖</button>
+    <!-- حاوية السلة -->
+    <div class="max-w-[600px] mx-auto mt-5 bg-white rounded-2xl p-5 shadow-lg">
+        <!-- رأس السلة -->
+        <div class="flex justify-between items-center border-b-2 border-gray-100 pb-4 mb-4">
+            <h2 class="text-xl font-bold text-gray-800">المنتجات المضافة</h2>
+            <button onclick="window.location.href='pos.html'" class="text-2xl text-red-500 hover:text-red-700 transition">✖</button>
         </div>
 
-        <div id="cart-items-list" class="cart-items">
+        <!-- قائمة المنتجات -->
+        <div id="cart-items-list" class="space-y-3 max-h-[45vh] overflow-y-auto mb-4">
             <!-- سيتم تعبئتها بواسطة JavaScript -->
         </div>
 
-        <div class="cart-total" id="cart-total-display">
-            الإجمالي:  د.ع<span id="total-price">0.00 </span>
+        <!-- إجمالي السلة -->
+        <div class="flex justify-between items-center text-xl font-bold mt-4 pt-4 border-t-2 border-dashed border-gray-300">
+            <span>الإجمالي:</span>
+            <span>د.ع <span id="total-price">0.00</span></span>
         </div>
 
-        <button class="checkout-btn" id="checkout-btn" onclick="checkout()">✅ إتمام الطلب</button>
-        <button class="continue-btn" onclick="window.location.href='pos.html'">🔙 متابعة التسوق</button>
-        <button class="clear-btn" onclick="clearCart()">🗑️ تفريغ السلة</button>
-        <button class="print-btn-cart" id="print-btn" onclick="printLastReceipt()" style="display:none;">🖨️ طباعة الفاتورة</button>
+        <!-- أزرار الإجراءات -->
+        <button class="checkout-btn w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl mt-4 transition" id="checkout-btn" onclick="checkout()">✅ إتمام الطلب</button>
+        <button class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 rounded-xl mt-3 transition" onclick="window.location.href='pos.html'">🔙 متابعة التسوق</button>
+        <button class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-xl mt-3 transition" onclick="clearCart()">🗑️ تفريغ السلة</button>
+        <button class="w-full bg-gray-700 hover:bg-gray-800 text-white font-bold py-4 rounded-xl mt-3 transition" id="print-btn" onclick="printLastReceipt()" style="display:none;">🖨️ طباعة الفاتورة</button>
     </div>
 
-    <nav class="bottom-nav">
-        <a href="dashboard.html" class="b-nav-item">🏠<br>الرئيسية</a>
-        <a href="pos.html" class="b-nav-item">📱<br>نقطة البيع</a>
-        <a href="orders.html" class="b-nav-item">🧾<br>الطلبات</a>
-        <a href="reports.html" class="b-nav-item">📊<br>التقارير</a>
+    <!-- القائمة السفلية (Bottom Navigation) -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-2 px-4 text-xs shadow-lg">
+        <a href="dashboard.html" class="flex flex-col items-center text-gray-600 hover:text-blue-600 transition">
+            <span class="text-xl">🏠</span>
+            <span class="mt-1">الرئيسية</span>
+        </a>
+        <a href="pos.html" class="flex flex-col items-center text-blue-600 font-bold">
+            <span class="text-xl">📱</span>
+            <span class="mt-1">نقطة البيع</span>
+        </a>
+        <a href="orders.html" class="flex flex-col items-center text-gray-600 hover:text-blue-600 transition">
+            <span class="text-xl">🧾</span>
+            <span class="mt-1">الطلبات</span>
+        </a>
+        <a href="reports.html" class="flex flex-col items-center text-gray-600 hover:text-blue-600 transition">
+            <span class="text-xl">📊</span>
+            <span class="mt-1">التقارير</span>
+        </a>
     </nav>
 
+    <!-- تضمين السكريبتات الخارجية -->
     <script src="js/auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
     <script src="js/UserManager.js"></script>
     <script src="js/alert.js"></script>
     <script src="js/utils.js"></script>
+
     <script>
         // استيراد بيانات السلة من localStorage
         let cartItems = JSON.parse(localStorage.getItem('pos_cart')) || [];
         let lastPrintedOrder = JSON.parse(localStorage.getItem('last_printed_order')) || null;
 
-        // دالة لحفظ السلة في localStorage وإعادة الرسم
+        // دوال مساعدة (إذا لم تكن موجودة في utils.js)
+        window.formatCurrency = window.formatCurrency || function(value) {
+            return parseFloat(value).toFixed(2);
+        };
+        window.formatCurrencyPrice = window.formatCurrencyPrice || function(value) {
+            return parseFloat(value).toFixed(2);
+        };
+
         function saveCartAndRender() {
             localStorage.setItem('pos_cart', JSON.stringify(cartItems));
             renderCart();
@@ -193,7 +102,7 @@
             let total = 0;
 
             if (cartItems.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#7f8c8d;">السلة فارغة</p>';
+                container.innerHTML = '<p class="text-center text-gray-500 py-6">السلة فارغة</p>';
                 document.getElementById('checkout-btn').style.display = 'none';
                 document.getElementById('print-btn').style.display = lastPrintedOrder ? 'block' : 'none';
                 totalSpan.innerText = '0.00';
@@ -205,16 +114,16 @@
                 total += itemTotal;
 
                 const div = document.createElement('div');
-                div.className = 'cart-item';
+                div.className = 'flex flex-wrap items-center gap-2 p-3 border-b border-gray-100 last:border-0';
                 div.innerHTML = `
-                    <div class="cart-item-info">
-                        <h4>${item.name}</h4>
-                        <p>${item.stock ? 'متوفر: ' + item.stock : ''}</p>
+                    <div class="flex-1 min-w-[120px]">
+                        <h4 class="font-semibold text-gray-800">${item.name}</h4>
+                        <p class="text-xs text-gray-500">${item.stock ? 'متوفر: ' + item.stock : ''}</p>
                     </div>
-					<input type="number" class="cart-item-qty-input qty-color" value="${item.quantity}" min="1" data-index="${index}" data-field="quantity" onchange="updateItem(this)">
-                    <input type="number" class="cart-item-price-input price-color" value="${item.price}" min="0" step="0.01" data-index="${index}" data-field="price" onchange="updateItem(this)">
-                    <div class="item-total">${formatCurrency(itemTotal)}</div>
-                    <button class="delete-item" onclick="removeItem(${index})" title="حذف">❌</button>
+                    <input type="number" class="w-[70px] p-2 border border-gray-300 rounded-lg text-center font-bold text-red-500" value="${item.quantity}" min="1" data-index="${index}" data-field="quantity" onchange="updateItem(this)">
+                    <input type="number" class="w-[70px] p-2 border border-gray-300 rounded-lg text-center font-bold text-green-600" value="${item.price}" min="0" step="0.01" data-index="${index}" data-field="price" onchange="updateItem(this)">
+                    <div class="w-[70px] p-2 border border-gray-300 rounded-lg text-center font-bold bg-gray-50">${formatCurrency(itemTotal)}</div>
+                    <button class="text-red-500 hover:text-red-700 text-xl" onclick="removeItem(${index})" title="حذف">❌</button>
                 `;
                 container.appendChild(div);
             });
@@ -224,7 +133,6 @@
             document.getElementById('print-btn').style.display = lastPrintedOrder ? 'block' : 'none';
         }
 
-        // دالة لتحديث عنصر عند تغيير السعر أو الكمية
         window.updateItem = function(inputElement) {
             const index = inputElement.dataset.index;
             const field = inputElement.dataset.field;
@@ -232,7 +140,6 @@
 
             if (isNaN(newValue) || newValue < 0) {
                 alert('الرجاء إدخال قيمة صحيحة');
-                // إعادة القيمة القديمة
                 inputElement.value = cartItems[index][field];
                 return;
             }
@@ -245,7 +152,6 @@
                     inputElement.value = cartItems[index].quantity;
                     return;
                 }
-                // التحقق من توفر المخزون إذا كان متاحاً
                 if (cartItems[index].stock && newValue > cartItems[index].stock) {
                     alert('الكمية المطلوبة تتجاوز المتوفر في المخزن');
                     inputElement.value = cartItems[index].quantity;
@@ -257,13 +163,11 @@
             saveCartAndRender();
         };
 
-        // دالة لحذف منتج من السلة
         window.removeItem = function(index) {
             cartItems.splice(index, 1);
             saveCartAndRender();
         };
 
-        // دالة لتفريغ السلة
         window.clearCart = function() {
             if (cartItems.length === 0) return;
             if (confirm('هل أنت متأكد من تفريغ السلة؟')) {
@@ -273,7 +177,6 @@
             }
         };
 
-        // دالة إتمام الطلب (كما هي مع تعديل بسيط)
         async function checkout() {
             if (cartItems.length === 0) {
                 alert("السلة فارغة!");
@@ -318,7 +221,6 @@
                 return;
             }
 
-            // حفظ آخر فاتورة للطباعة
             lastPrintedOrder = {
                 id: orderId,
                 date: new Date().toLocaleString('ar-EG'),
@@ -329,10 +231,8 @@
             };
             localStorage.setItem('last_printed_order', JSON.stringify(lastPrintedOrder));
 
-            // تفريغ السلة
             cartItems = [];
             localStorage.removeItem('pos_cart');
-            // لا نفرغ العميل المختار، قد يحتاج المستخدم للاحتفاظ به للفاتورة التالية
 
             renderCart();
 
@@ -373,10 +273,10 @@
                     <div class="divider"></div>
                     <table>
                         <tr><th style="width: 50%;">الصنف</th><th style="width: 20%; text-align:center;">كمية</th><th style="width: 30%;">السعر</th></tr>
-                        ${lastPrintedOrder.items.map(i => `<tr><td>${i.name}</td><td style="text-align:center;">${i.quantity}</td><td>$${(i.quantity * i.price).toFixed(2)}</td></tr>`).join('')}
+                        ${lastPrintedOrder.items.map(i => `<tr><td>${i.name}</td><td style="text-align:center;">${i.quantity}</td><td>${formatCurrency(i.quantity * i.price)}</td></tr>`).join('')}
                     </table>
                     <div class="divider"></div>
-                    <div class="total-section">الإجمالي: ${formatCurrencyPrice(lastPrintedOrder.total.toFixed(2))}</div>
+                    <div class="total-section">الإجمالي: ${formatCurrency(lastPrintedOrder.total)}</div>
                     <div class="divider"></div>
                     <div class="footer"><p>شكراً لزيارتكم!</p></div>
                 </body>
