@@ -2,125 +2,116 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google" content="notranslate">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#34495e">
     <title>نقطة البيع - Mobile POS</title>
- <link rel="stylesheet" href="css/style.css">
-</head>
-<body class="pos-layout">
-    <!-- الهيدر الرئيسي -->
-    <header style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #2c3e50; color: white;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <span onclick="toggleSidebar()" style="font-size: 24px; cursor: pointer;">☰</span>
-            <h2 style="margin:0; font-size: 1.1rem;">📱 نقطة البيع</h2>
-        </div>
-        <!-- أيقونة السلة - رابط لصفحة السلة المنفصلة -->
-        <a href="cart.html" class="cart-icon" style="position: relative; cursor: pointer; text-decoration: none; color: white;">
-            🛒 <span id="cart-count" style="position: absolute; top: -8px; left: -8px; background: #e74c3c; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px;">0</span>
-        </a>
-    </header>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 
-    <!-- القائمة الجانبية -->
-    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="user-profile" style="display: flex; align-items: center; gap: 10px; padding: 20px;">
-                <div class="user-avatar" style="width: 45px; height: 45px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center;">👤</div>
-                <div class="user-info">
-                    <h3 id="sidebar-username" style="margin:0; font-size:14px; color: white;">تحميل...</h3>
-                    <span style="font-size: 11px; color: #2ecc71;">متصل الآن</span>
+    <style>
+        body { font-family: 'Tajawal', sans-serif; background-color: #f8fafc; overflow-x: hidden; }
+        .categories-scroll::-webkit-scrollbar { display: none; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+        .active-cat { background-color: #3b82f6 !important; color: white !important; transform: scale(1.05); }
+		
+        .bottom-nav-item:hover {
+            background: #e2e8f0;
+        }
+
+        .bottom-nav-item.active {
+            background: #3b82f6;
+            color: white !important;
+        }
+
+    </style>
+</head>
+<body class="pb-28">
+
+    <div id="sidebar-placeholder"></div>
+    <div id="nav-placeholder"></div>
+
+
+
+    <div class="bg-slate-800 text-white shadow-lg sticky top-0 z-40">
+        <div class="p-4 flex flex-col gap-4">
+            <div class="space-y-3">
+                <div class="relative">
+                    <i class="fas fa-user-circle absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <select id="customer-select" class="w-full bg-slate-700/50 text-white text-sm pr-10 pl-4 py-3 rounded-xl border border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none">
+                        <option value="">-- اختر العميل (زبون نقدي) --</option>
+                    </select>
+                </div>
+                <div class="relative">
+                    <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="search-input" placeholder="ابحث بالاسم أو امسح الباركود..." onkeyup="handleSearch(event)" 
+                        class="w-full bg-white text-slate-800 text-sm pr-10 pl-4 py-3 rounded-xl shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500" autofocus>
                 </div>
             </div>
         </div>
-        <div class="sidebar-links">
-            <div style="padding: 10px 20px; font-size: 11px; color: #95a5a6; font-weight: bold; border-bottom: 1px solid #eee;">إدارة البيانات</div>
-            <a href="products.html" class="nav-link">📦 المنتجات</a>
-            <a href="categories.html" class="nav-link">🗂️ الأصناف</a>
-            <a href="customers.html" class="nav-link">👥 العملاء</a>
-            <a href="users.html" class="nav-link">👤 الموظفين</a>
-			<a href="settings.html" class="nav-link">⚙️ الإعدادات</a>
-            <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
-            <a href="#" onclick="logout()" class="nav-link" style="color: #e74c3c;">🚪 تسجيل الخروج</a>
+
+        <div id="categories-container" class="categories-scroll flex gap-2 overflow-x-auto px-4 pb-4 mt-1 scroll-smooth">
+            <button class="cat-btn active-cat whitespace-nowrap px-6 py-2 rounded-full bg-slate-700 text-slate-300 text-xs font-bold transition-all shadow-sm" onclick="filterByCategory('all', this)">
+                الكل
+            </button>
+            </div>
+    </div>
+
+    <main class="p-4">
+        <div id="loading" class="flex flex-col items-center justify-center py-20 text-slate-400">
+            <div class="animate-spin text-3xl mb-4 text-blue-500"><i class="fas fa-circle-notch"></i></div>
+            <p class="text-sm font-medium">جاري تحميل قائمة المنتجات...</p>
         </div>
-    </div>
 
-    <!-- القائمة السفلية -->
-    <nav class="bottom-nav">
-        <a href="dashboard.html" class="b-nav-item">🏠<br>الرئيسية</a>
-        <a href="pos.html" class="b-nav-item active">📱<br>نقطة البيع</a>
-        <a href="orders.html" class="b-nav-item">🧾<br>الطلبات</a>
-        <a href="reports.html" class="b-nav-item">📊<br>التقارير</a>
-    </nav>
+        <div id="product-grid" class="product-grid">
+            </div>
+    </main>
 
-    <!-- منطقة التحكم: اختيار العميل والبحث -->
-    <div class="controls-area">
-        <select id="customer-select">
-            <option value="">-- اختر العميل (زبون نقدي) --</option>
-        </select>
-        <input type="text" id="search-input" placeholder="🔍 ابحث بالاسم أو امسح الباركود..." onkeyup="handleSearch(event)" autofocus>
-    </div>
-
-    <!-- أزرار التصنيفات -->
-    <div class="categories-scroll" id="categories-container">
-        <button class="cat-btn active" onclick="filterByCategory('all', this)">الكل</button>
-    </div>
-
-    <!-- منطقة تحميل المنتجات -->
-    <div id="loading">جاري تحميل البيانات...</div>
-    <div id="product-grid" class="product-grid"></div>
-
-    <!-- تضمين ملفات JavaScript -->
-    <script src="js/auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+	  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="js/supabase-config.js"></script>
-    <script src="js/UserManager.js"></script>
-    <script src="js/alert.js"></script>
+    <script src="js/auth.js"></script>
     <script src="js/utils.js"></script>
-    <script>
-        // ========================
-        // المتغيرات العامة
-        // ========================
-        let allProducts = [];              // جميع المنتجات المسترجعة من Supabase
-        let currentCategory = 'all';       // التصنيف الحالي المحدد
+    <script src="js/UserManager.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/Navigation.js"></script>
 
-        // ========================
-        // تهيئة الصفحة
-        // ========================
+
+    <script>
+        let allProducts = [];
+        let currentCategory = 'all';
+
         async function initPOS() {
-            await fetchCustomers();
-            await fetchCategories();
-            await fetchProducts();
-            document.getElementById('loading').style.display = 'none';
-            updateCartCount(); // تحديث عداد السلة عند التحميل
+            try {
+                await fetchCustomers();
+                await fetchCategories();
+                await fetchProducts();
+                document.getElementById('loading').style.display = 'none';
+                updateCartCount();
+            } catch (err) {
+                console.error("Init Error:", err);
+                document.getElementById('loading').innerHTML = '<p class="text-red-500">فشل تحميل البيانات. تأكد من الاتصال.</p>';
+            }
         }
 
-        // ========================
-        // جلب البيانات من Supabase
-        // ========================
         async function fetchCustomers() {
             const { data: customers } = await supabaseClient.from('customers').select('*');
+            const select = document.getElementById('customer-select');
             if (customers) {
-                const select = document.getElementById('customer-select');
                 customers.forEach(cust => {
-                    select.innerHTML += `<option value="${cust.id}">${cust.name} (${cust.phone || 'بدون رقم'})</option>`;
+                    const opt = document.createElement('option');
+                    opt.value = cust.id;
+                    opt.textContent = `${cust.name} (${cust.phone || 'بدون رقم'})`;
+                    select.appendChild(opt);
                 });
+                const savedId = localStorage.getItem('selected_customer_id');
+                if (savedId) select.value = savedId;
 
-                // استعادة آخر عميل مختار من localStorage
-                const savedCustomerId = localStorage.getItem('selected_customer_id');
-                if (savedCustomerId) {
-                    select.value = savedCustomerId;
-                }
-
-                // حفظ اختيار العميل عند التغيير
-                select.addEventListener('change', function(e) {
+                select.addEventListener('change', (e) => {
                     const selected = e.target.options[e.target.selectedIndex];
-                    const customerId = selected.value;
-                    const customerName = customerId ? selected.text.split('(')[0].trim() : '';
-                    localStorage.setItem('selected_customer_id', customerId);
-                    localStorage.setItem('selected_customer_name', customerName);
+                    localStorage.setItem('selected_customer_id', selected.value);
+                    localStorage.setItem('selected_customer_name', selected.value ? selected.text.split('(')[0].trim() : '');
                 });
             }
         }
@@ -130,64 +121,61 @@
             if (categories) {
                 const container = document.getElementById('categories-container');
                 categories.forEach(cat => {
-                    container.innerHTML += `<button class="cat-btn" onclick="filterByCategory(${cat.id}, this)">${cat.name}</button>`;
+                    const btn = document.createElement('button');
+                    btn.className = 'cat-btn whitespace-nowrap px-6 py-2 rounded-full bg-slate-700 text-slate-300 text-xs font-bold transition-all shadow-sm';
+                    btn.textContent = cat.name;
+                    btn.onclick = () => filterByCategory(cat.id, btn);
+                    container.appendChild(btn);
                 });
             }
         }
 
         async function fetchProducts() {
             const { data: products, error } = await supabaseClient.from('products').select('*');
-            if (error) {
-                document.getElementById('loading').innerText = "حدث خطأ في تحميل المنتجات";
-                return;
-            }
+            if (error) throw error;
             allProducts = products;
             renderProducts(allProducts);
         }
 
-        // ========================
-        // عرض المنتجات في الشبكة
-        // ========================
         function renderProducts(productsToRender) {
             const gridDiv = document.getElementById('product-grid');
             gridDiv.innerHTML = '';
             
             if (productsToRender.length === 0) {
-                gridDiv.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #7f8c8d;">لا توجد منتجات مطابقة.</p>';
+                gridDiv.innerHTML = '<div class="col-span-full text-center py-20 text-slate-400 italic">لا توجد منتجات مطابقة للبحث</div>';
                 return;
             }
 
             productsToRender.forEach(product => {
+                const isOutOfStock = product.stock_quantity <= 0;
                 const card = document.createElement('div');
-                card.className = 'product-card';
-                card.onclick = () => addToCart(product.id, product.name, product.price, product.stock_quantity);
+                card.className = `bg-white p-3 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center text-center transition active:scale-95 ${isOutOfStock ? 'opacity-60 grayscale' : 'cursor-pointer hover:shadow-md'}`;
+                
+                card.onclick = () => {
+                    if(!isOutOfStock) addToCart(product.id, product.name, product.price, product.stock_quantity);
+                };
+
                 card.innerHTML = `
-                    <h3>${product.name}</h3>
-                    <p>${formatCurrency(product.price)}</p>
-                    <small style="color:${product.stock_quantity > 0 ? '#bdc3c7' : '#e74c3c'}; font-size:11px;">
-                        ${product.stock_quantity > 0 ? 'متوفر: ' + product.stock_quantity : '❌ نفذت الكمية'}
-                    </small>
+                    <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mb-3 text-blue-500 text-xl font-black">
+                        ${product.name.charAt(0)}
+                    </div>
+                    <h3 class="text-xs font-bold text-slate-800 mb-1 line-clamp-2 min-h-[32px]">${product.name}</h3>
+                    <h2 class="text-emerald-600 font-black text-sm mb-1">${formatCurrency(product.price)}</h2>
+                    <span class="text-[9px] px-2 py-1 rounded-full ${isOutOfStock ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-500'} font-bold">
+                        ${isOutOfStock ? 'نفذت الكمية' : 'المخزن: ' + product.stock_quantity}
+                    </span>
                 `;
                 gridDiv.appendChild(card);
             });
         }
 
-        // ========================
-        // وظائف السلة (باستخدام localStorage)
-        // ========================
         function addToCart(id, name, price, stock) {
-            if (stock <= 0) {
-                alert("عذراً، هذا المنتج نفذ من المخزن!");
-                return;
-            }
-
-            // جلب السلة الحالية من localStorage
             let cart = JSON.parse(localStorage.getItem('pos_cart')) || [];
             const existingItem = cart.find(item => item.id === id);
 
             if (existingItem) {
                 if (existingItem.quantity >= stock) {
-                    alert("لا توجد كمية كافية في المخزن لتغطية طلبك!");
+                    alert("⚠️ الكمية المتاحة لا تكفي");
                     return;
                 }
                 existingItem.quantity += 1;
@@ -195,50 +183,43 @@
                 cart.push({ id, name, price, quantity: 1, stock: stock });
             }
 
-            // حفظ السلة في localStorage
             localStorage.setItem('pos_cart', JSON.stringify(cart));
             updateCartCount();
-       
+            
+            // إضافة حركة بسيطة للزر عند الإضافة
+            const cartBtn = document.querySelector('.fa-shopping-basket');
+            cartBtn.classList.add('animate-bounce');
+            setTimeout(() => cartBtn.classList.remove('animate-bounce'), 500);
         }
 
-        // تحديث عداد السلة
         function updateCartCount() {
             const cart = JSON.parse(localStorage.getItem('pos_cart')) || [];
             const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
             document.getElementById('cart-count').innerText = totalItems;
         }
 
-        // ========================
-        // التصفية والبحث
-        // ========================
         function filterByCategory(catId, btnElement) {
             currentCategory = catId;
-            document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
-            btnElement.classList.add('active');
+            document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active-cat'));
+            btnElement.classList.add('active-cat');
+            applyFilters();
+        }
+
+        function handleSearch(event) {
+            const rawSearchTerm = event.target.value.trim();
+            if (event.key === 'Enter' && rawSearchTerm !== '') {
+                const matched = allProducts.find(p => p.barcode === rawSearchTerm);
+                if (matched) {
+                    addToCart(matched.id, matched.name, matched.price, matched.stock_quantity);
+                    event.target.value = '';
+                }
+            }
             applyFilters();
         }
 
         function normalizeArabic(text) {
             if (!text) return '';
             return String(text).replace(/[أإآا]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').toLowerCase();
-        }
-
-        function handleSearch(event) {
-            const rawSearchTerm = event.target.value.trim();
-            const searchTerm = normalizeArabic(rawSearchTerm);
-
-            // إذا كان Enter ووجدنا باركود مطابق
-            if (event.key === 'Enter' && rawSearchTerm !== '') {
-                const matchedProduct = allProducts.find(p => p.barcode === rawSearchTerm);
-                if (matchedProduct) {
-                    addToCart(matchedProduct.id, matchedProduct.name, matchedProduct.price, matchedProduct.stock_quantity);
-                    event.target.value = ''; // تفريغ مربع البحث
-                    applyFilters();
-                    return;
-                }
-            }
-            
-            applyFilters();
         }
 
         function applyFilters() {
@@ -259,20 +240,10 @@
             renderProducts(filtered);
         }
 
-        // ========================
-        // بدء التطبيق
-        // ========================
+        // Initialize
         (function() {
-            // تحديث اسم المستخدم في الشريط الجانبي
             const sidebarUsername = document.getElementById('sidebar-username');
-            if (sidebarUsername) {
-                sidebarUsername.innerText = localStorage.getItem('username') || 'إسماعيل';
-            }
-
-            // تهيئة مدير المستخدم
-            const userManager = new UserManager();
-
-            // بدء تحميل البيانات
+            if (sidebarUsername) sidebarUsername.innerText = localStorage.getItem('username') || 'إسماعيل';
             initPOS();
         })();
     </script>

@@ -4,127 +4,109 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
-    <title>إدارة المستخدمين - Mobile POS</title>
-    <link rel="stylesheet" href="css/style.css">
-  
+    <title>إدارة المستخدمين - Modern POS</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        .role-badge {
-            font-size: 11px;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-weight: bold;
-        }
-        .role-admin { background: #fee2e2; color: #ef4444; }
-        .role-cashier { background: #dcfce7; color: #22c55e; }
-        
-        .add-modal select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #dcdde1;
-            border-radius: 8px;
-            background: white;
-            margin-bottom: 10px;
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap');
+        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; padding-bottom: 90px; }
+        .user-card { transition: all 0.3s ease; }
+        .user-card:hover { transform: translateY(-3px); }
+        .modal-animate { animation: modalSlide 0.3s ease-out; }
+        @keyframes modalSlide {
+            from { opacity: 0; transform: translate(-50%, -48%) scale(0.95); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
         }
     </style>
 </head>
 <body>
-	<header style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #2c3e50; color: white; position: sticky; top: 0; z-index: 1000;">
-    <div style="display: flex; align-items: center; gap: 12px;">
-        <span onclick="toggleSidebar()" style="font-size: 24px; cursor: pointer; padding: 5px;">☰</span>
-        <h2 style="margin:0; font-size: 1.1rem;">👥 إدارة المستخدمين</h2>
-    </div>
-    <div id="header-actions">
-        <div id="user-greeting" style="font-size: 0.8rem; opacity: 0.8;"></div>
-    </div>
-</header>
 
-<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
-<div class="sidebar" id="sidebar">
-    <div class="sidebar-header" style="background: #34495e; padding: 30px 20px; color: white;">
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <div style="width: 50px; height: 50px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
+    <div id="sidebar-placeholder"></div>
+    <div id="nav-placeholder"></div>
+
+    <main class="max-w-4xl mx-auto p-4">
+        <div class="flex gap-3 mb-6 items-center bg-white p-3 rounded-2xl shadow-sm border border-gray-100 sticky top-20 z-40">
+            <div class="relative flex-1">
+                <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input type="text" id="search-user" placeholder="بحث عن موظف..." onkeyup="handleSearch()" 
+                    class="w-full pr-10 pl-4 py-2 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+            </div>
+            
+            <button onclick="openAddModal()" 
+                class="w-11 h-11 bg-slate-800 hover:bg-black text-white rounded-xl shadow-lg transition-all flex items-center justify-center shrink-0">
+                <i class="fas fa-user-plus"></i>
+            </button>
+        </div>
+
+        <div id="summary-box" class="mb-6 inline-block bg-blue-600 text-white px-6 py-2 rounded-2xl text-sm font-bold shadow-md shadow-blue-100">
+            إجمالي الموظفين: 0
+        </div>
+
+        <div id="loading" class="flex flex-col items-center justify-center py-20 text-gray-400">
+            <div class="animate-spin text-3xl mb-4 text-blue-500"><i class="fas fa-circle-notch"></i></div>
+            <p>جاري تحميل قائمة الموظفين...</p>
+        </div>
+
+        <div id="users-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            </div>
+    </main>
+
+    <div id="modal-overlay" class="fixed inset-0 bg-black/50 z-[1100] hidden backdrop-blur-sm" onclick="closeModal()"></div>
+    <div id="add-modal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-md bg-white rounded-3xl shadow-2xl z-[1101] hidden flex flex-col overflow-hidden modal-animate">
+        <div class="p-6 border-b border-gray-50 flex justify-between items-center">
+            <h3 id="modal-title" class="text-xl font-bold text-gray-800">إضافة موظف</h3>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="p-6 space-y-4">
+            <input type="hidden" id="edit-user-id">
+            
             <div>
-                <h3 id="side-user-name" style="margin:0; font-size: 16px;">إسماعيل</h3>
-                <span style="font-size: 12px; color: #2ecc71;">● مدير النظام</span>
+                <label class="block text-xs font-bold text-gray-500 mb-1 mr-1">اسم المستخدم</label>
+                <input type="text" id="user-name" placeholder="Username" 
+                    class="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1 mr-1">كلمة المرور</label>
+                <input type="password" id="user-pass" placeholder="••••••••" 
+                    class="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1 mr-1">الصلاحية</label>
+                <select id="user-role" class="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none appearance-none font-bold">
+                    <option value="cashier">كاشير (صلاحيات محدودة)</option>
+                    <option value="admin">مدير (كافة الصلاحيات)</option>
+                </select>
             </div>
         </div>
-    </div>
-    <div class="sidebar-links" style="padding: 15px 0;">
-        <div style="padding: 10px 25px; font-size: 11px; color: #95a5a6; font-weight: bold;">إدارة البيانات</div>
-        <a href="products.html" class="nav-link">📦 المنتجات</a>
-        <a href="categories.html" class="nav-link">🗂️ الأصناف</a>
-        <a href="customers.html" class="nav-link">👥 العملاء</a>
-        <a href="users.html" class="nav-link">👤 المستخدمين (الموظفين)</a>
-		<a href="settings.html" class="nav-link">⚙️ الإعدادات</a>
-        <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
-        <a href="#" onclick="logout()" class="nav-link" style="color: #e74c3c;">🚪 تسجيل الخروج</a>
-    </div>
-</div>
 
-<nav class="bottom-nav" style="position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; background: white; padding: 10px 0; border-top: 1px solid #eee; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000;">
-    <a href="users.html" class="b-nav-item active">👤<br>المستخدمين (الموظفين)</a>
-    <a href="pos.html" class="b-nav-item">📱<br>نقطة البيع</a>
-    <a href="orders.html" class="b-nav-item">🧾<br>الطلبات</a>
-    <a href="reports.html" class="b-nav-item">📊<br>التقارير</a>
-</nav>
-
-
-  <div class="controls-area" style="display: flex; gap: 10px; align-items: center; padding: 10px;">
-    <input type="text" id="search-user" placeholder="🔍 ابحث هنا..." onkeyup="handleSearch()" style="flex: 1; margin: 0;">
-    
-    <button class="inline-add-btn" onclick="openAddModal()" style="
-        width: 40px; 
-        height: 40px; 
-        background: #3498db; 
-        color: white; 
-        border: none; 
-        border-radius: 8px; 
-        font-size: 24px; 
-        display: flex; 
-        align-items: center; 
-        justify-content: center; 
-        cursor: pointer;
-        flex-shrink: 0;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    ">+</button>
-</div>
-    
-    <div class="summary-box" id="summary-box">
-        إجمالي الموظفين: 0
-    </div>
-
-    <div id="loading" style="text-align:center; padding:20px;">جاري تحميل المستخدمين...</div>
-    <div id="users-list" class="products-list"></div>
-
-    <div class="modal-overlay" id="modal-overlay" onclick="closeModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:100;"></div>
-    <div class="add-modal" id="add-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; width:90%; max-width:400px; padding:20px; border-radius:15px; z-index:101; flex-direction:column;">
-        <h3 id="modal-title">إضافة مستخدم جديد</h3>
-        
-        <input type="hidden" id="edit-user-id">
-        <input type="text" id="user-name" placeholder="اسم المستخدم (Username)" style="padding:12px; border:1px solid #ccc; border-radius:8px; margin-bottom:10px;">
-        <input type="password" id="user-pass" placeholder="كلمة المرور" style="padding:12px; border:1px solid #ccc; border-radius:8px; margin-bottom:10px;">
-        
-        <select id="user-role">
-            <option value="cashier">كاشير (Cashier)</option>
-            <option value="admin">مدير (Admin)</option>
-        </select>
-         <div class="modal-btns">
-            <button class="save-btn" onclick="saveUser()">حفظ</button>
-            <button class="cancel-btn" onclick="closeModal()">إلغاء</button>
+        <div class="p-6 bg-gray-50 flex gap-3">
+            <button onclick="saveUser()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-100">
+                حفظ البيانات
+            </button>
+            <button onclick="closeModal()" class="px-6 bg-white border border-gray-200 text-gray-500 py-3 rounded-xl font-bold hover:bg-gray-100 transition-all">
+                إلغاء
+            </button>
         </div>
     </div>
 
-    <script src="js/auth.js"></script>
-    <script src="js/alert.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/utils.js"></script>
     <script src="js/UserManager.js"></script>
-    
-    <script>    
-	const userManager = new UserManager();
+    <script src="js/sidebar.js"></script>
+    <script src="js/Navigation.js"></script>
+
+    <script>
+        const userManager = new UserManager();
         let allUsers = [];
-  
+
         async function initPage() {
             await fetchUsers();
         }
@@ -148,23 +130,39 @@
             listDiv.innerHTML = ''; 
 
             list.forEach(user => {
-                const item = document.createElement('div');
-                item.className = 'product-item'; 
+                const isAdmin = user.role === 'admin';
+                const roleBadge = isAdmin 
+                    ? 'bg-red-50 text-red-600' 
+                    : 'bg-green-50 text-green-600';
                 
-                const roleClass = user.role === 'admin' ? 'role-admin' : 'role-cashier';
-                const roleText = user.role === 'admin' ? 'مدير' : 'كاشير';
+                const avatarIcon = isAdmin ? 'fa-user-shield' : 'fa-user-tag';
+                const avatarColor = isAdmin ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600';
 
+                const item = document.createElement('div');
+                item.className = 'user-card bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4';
+                
                 item.innerHTML = `
-                    <div class="product-header">
-                        <div class="product-details">
-                            <h3>${user.username}</h3>
-                            <span class="role-badge ${roleClass}">${roleText}</span>
-                            <p style="font-size:11px; margin-top:5px; color:#95a5a6;">تاريخ الإنشاء: ${new Date(user.created_at).toLocaleDateString('ar-EG')}</p>
-                        </div>
+                    <div class="w-12 h-12 ${avatarColor} rounded-xl flex items-center justify-center text-xl shrink-0">
+                        <i class="fas ${avatarIcon}"></i>
                     </div>
-                    <div class="product-actions">
-                        <button class="action-btn" title="تعديل" onclick="openEditModal(${user.id}, '${user.username}', '${user.role}')">✏️</button>
-                        <button class="action-btn" title="حذف" onclick="deleteUser(${user.id}, '${user.username}')">🗑️</button>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                            <h3 class="font-bold text-gray-800 truncate">${user.username}</h3>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${roleBadge}">
+                                ${isAdmin ? 'مدير' : 'كاشير'}
+                            </span>
+                        </div>
+                        <p class="text-[10px] text-gray-400 mt-1">إنضم: ${new Date(user.created_at).toLocaleDateString('ar-EG')}</p>
+                    </div>
+                    <div class="flex gap-1">
+                        <button onclick="openEditModal(${user.id}, '${user.username}', '${user.role}')" 
+                            class="w-8 h-8 rounded-lg bg-gray-50 text-blue-500 flex items-center justify-center hover:bg-blue-500 hover:text-white transition-all">
+                            <i class="fas fa-edit text-xs"></i>
+                        </button>
+                        <button onclick="deleteUser(${user.id}, '${user.username}')" 
+                            class="w-8 h-8 rounded-lg bg-gray-50 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all">
+                            <i class="fas fa-trash text-xs"></i>
+                        </button>
                     </div>
                 `;
                 listDiv.appendChild(item);
@@ -172,16 +170,31 @@
         }
 
         function handleSearch() {
-            const term = document.getElementById('search-user').value.trim().toLowerCase();
+            const term = document.getElementById('search-user').value.toLowerCase().trim();
             const filtered = allUsers.filter(u => u.username.toLowerCase().includes(term));
             renderUsers(filtered);
         }
+
+        function toggleModal(show) {
+            const modal = document.getElementById('add-modal');
+            const overlay = document.getElementById('modal-overlay');
+            if(show) {
+                overlay.classList.remove('hidden');
+                modal.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+                modal.classList.add('hidden');
+            }
+        }
+
+        function closeModal() { toggleModal(false); }
 
         function openAddModal() {
             document.getElementById('modal-title').innerText = "إضافة موظف جديد";
             document.getElementById('edit-user-id').value = '';
             document.getElementById('user-name').value = '';
             document.getElementById('user-pass').value = '';
+            document.getElementById('user-pass').placeholder = "••••••••";
             document.getElementById('user-role').value = 'cashier';
             toggleModal(true);
         }
@@ -190,17 +203,11 @@
             document.getElementById('modal-title').innerText = "تعديل بيانات الموظف";
             document.getElementById('edit-user-id').value = id;
             document.getElementById('user-name').value = name;
+            document.getElementById('user-pass').value = '';
             document.getElementById('user-pass').placeholder = "اتركه فارغاً للحفاظ على القديمة";
             document.getElementById('user-role').value = role;
             toggleModal(true);
         }
-
-        function toggleModal(show) {
-            document.getElementById('modal-overlay').style.display = show ? 'block' : 'none';
-            document.getElementById('add-modal').style.display = show ? 'flex' : 'none';
-        }
-
-        function closeModal() { toggleModal(false); }
 
         async function saveUser() {
             const id = document.getElementById('edit-user-id').value;
@@ -208,40 +215,48 @@
             const password = document.getElementById('user-pass').value.trim();
             const role = document.getElementById('user-role').value;
 
-            if (!username) { alert("يرجى إدخال اسم المستخدم!"); return; }
+            if (!username) { Swal.fire('تنبيه', 'يرجى إدخال اسم المستخدم', 'warning'); return; }
 
             const userData = { username, role };
-            // ملاحظة: في نظام حقيقي، يجب تشفير الباسورد قبل الإرسال (Hashing)
             if (password) userData.password_hash = password; 
 
-            let error;
+            let result;
             if (id) {
-                const res = await supabaseClient.from('users').update(userData).eq('id', id);
-                error = res.error;
+                result = await supabaseClient.from('users').update(userData).eq('id', id);
             } else {
-                if (!password) { alert("يرجى إدخال كلمة المرور!"); return; }
-                const res = await supabaseClient.from('users').insert([userData]);
-                error = res.error;
+                if (!password) { Swal.fire('تنبيه', 'كلمة المرور مطلوبة للمستخدم الجديد', 'warning'); return; }
+                result = await supabaseClient.from('users').insert([userData]);
             }
 
-            if (error) {
-                alert("خطأ: اسم المستخدم موجود مسبقاً أو مشكلة في الاتصال.");
+            if (result.error) {
+                Swal.fire('خطأ', 'اسم المستخدم موجود مسبقاً أو تعذر الاتصال', 'error');
             } else {
                 closeModal();
                 fetchUsers();
+                Swal.fire({ icon: 'success', title: 'تم الحفظ', showConfirmButton: false, timer: 1000 });
             }
         }
 
         async function deleteUser(id, name) {
             if (id == localStorage.getItem('user_id')) {
-                alert("لا يمكنك حذف نفسك أثناء تسجيل الدخول!");
+                Swal.fire('عذراً', 'لا يمكنك حذف حسابك الحالي!', 'error');
                 return;
             }
-            if (!await confirm(`هل أنت متأكد من حذف المستخدم "${name}"؟`)) return;
 
-            const { error } = await supabaseClient.from('users').delete().eq('id', id);
-            if (error) alert("خطأ في الحذف: " + error.message);
-            else fetchUsers();
+            const { isConfirmed } = await Swal.fire({
+                title: 'حذف الموظف؟',
+                text: `سيتم حذف الموظف "${name}" نهائياً من النظام.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'نعم، حذف'
+            });
+
+            if (isConfirmed) {
+                const { error } = await supabaseClient.from('users').delete().eq('id', id);
+                if (error) Swal.fire('خطأ', 'تعذر حذف المستخدم', 'error');
+                else fetchUsers();
+            }
         }
 
         initPage();

@@ -3,123 +3,785 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="google" content="notranslate">
-    <title>الرئيسية - Mobile POS</title>
+	    <meta name="google" content="notranslate">
+    <title>نظام إدارة المبيعات - لوحة التحكم</title>
     
- <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        /* جميع الأنماط كما هي دون تغيير */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-		<header style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #2c3e50; color: white; position: sticky; top: 0; z-index: 1000;">
-    <div style="display: flex; align-items: center; gap: 12px;">
-        <span onclick="toggleSidebar()" style="font-size: 24px; cursor: pointer; padding: 5px;">☰</span>
-        <h2 style="margin:0; font-size: 1.1rem;">📊 لوحة القيادة</h2>
-    </div>
-    <div id="header-actions">
-        <div id="user-greeting" style="font-size: 0.8rem; opacity: 0.8;"></div>
-    </div>
-</header>
-	<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
-<div class="sidebar" id="sidebar">
-    <div class="sidebar-header" style="background: #34495e; padding: 30px 20px; color: white;">
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <div style="width: 50px; height: 50px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            min-height: 120vh;
+        }
+        .custom-alert-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .custom-alert-box {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            transform: scale(0.9);
+            animation: modalPop 0.3s ease forwards;
+        }
+        @keyframes modalPop {
+            to { transform: scale(1); }
+        }
+
+        .custom-alert-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        .custom-alert-box button {
+            padding: 12px 30px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            color: white;
+            flex: 1;
+        }
+
+        .custom-alert-box button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .nav-link {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(to left, #3b82f6, #60a5fa);
+            transition: width 0.3s ease;
+            z-index: -1;
+        }
+
+        .nav-link:hover::before {
+            width: 100%;
+        }
+
+        .nav-link:hover {
+            color: white !important;
+            transform: translateX(-5px);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(to left, #3b82f6, #60a5fa);
+            color: white !important;
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin-bottom: 15px;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .table-header {
+            background: linear-gradient(to left, #f8fafc, #e2e8f0);
+            color: #1e293b;
+            font-weight: bold;
+        }
+
+        .table-row {
+            transition: all 0.3s;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table-row:hover {
+            background: #f8fafc;
+            transform: scale(1.01);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .bottom-nav-item:hover {
+            background: #e2e8f0;
+        }
+
+        .bottom-nav-item.active {
+            background: #3b82f6;
+            color: white !important;
+        }
+
+
+
+
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: white;
+            }
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .content-wrapper {
+            padding-bottom: 80px;
+        }
+
+        .badge {
+            padding: 5px 10px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .badge-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .badge-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .badge-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .badge-info {
+            background: #3b82f6;
+            color: white;
+        }
+	
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- مكان حقن القائمة الجانبية الموحدة -->
+    <div id="sidebar-placeholder"></div>
+    <!-- مكان حقن الشريط السفلي الموحد -->
+    <div id="nav-placeholder"></div>
+
+    <!-- المحتوى الرئيسي -->
+    <div class="container mx-auto px-4 py-6 content-wrapper">
+        <!-- شريط العنوان مع ترحيب المستخدم -->
+        <div class="flex justify-between items-center mb-8 no-print" data-aos="fade-down">
             <div>
-                <h3 id="side-user-name" style="margin:0; font-size: 16px;">إسماعيل</h3>
-                <span style="font-size: 12px; color: #2ecc71;">● مدير النظام</span>
+                <h1 class="text-3xl font-bold text-gray-800 flex items-center gap-3">
+                    <i class="fas fa-chart-pie text-blue-600"></i>
+                    لوحة التحكم
+                </h1>
+                <p class="text-gray-500 mt-1">
+                    <i class="fas fa-calendar-alt ml-1"></i>
+                    آخر تحديث: <span id="last-update-time">جاري التحميل...</span>
+                </p>
+            </div>
+            
+
+        </div>
+
+        <!-- ==================== بطاقات الإحصائيات ==================== -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- بطاقة إجمالي المبيعات اليوم -->
+            <div class="stat-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="stat-icon bg-blue-100 text-blue-600">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <h3 class="text-gray-500 text-sm mb-1">مبيعات اليوم</h3>
+                <div class="flex items-center justify-between">
+                    <span class="text-3xl font-bold text-gray-800" id="today-sales">0.00</span>
+                    <span class="badge badge-success" id="sales-change">+0%</span>
+                </div>
+                <p class="text-xs text-gray-400 mt-2">
+                    <i class="fas fa-clock ml-1"></i>
+                    آخر تحديث: الآن
+                </p>
+            </div>
+
+            <!-- بطاقة عدد الطلبات -->
+            <div class="stat-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="stat-icon bg-green-100 text-green-600">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <h3 class="text-gray-500 text-sm mb-1">طلبات اليوم</h3>
+                <div class="flex items-center justify-between">
+                    <span class="text-3xl font-bold text-gray-800" id="today-orders">0</span>
+                    <span class="badge badge-info">جديد</span>
+                </div>
+                <p class="text-xs text-gray-400 mt-2">
+                    <i class="fas fa-check-circle ml-1 text-green-500"></i>
+                    0 طلب مكتمل
+                </p>
+            </div>
+
+            <!-- بطاقة المنتجات -->
+            <div class="stat-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="stat-icon bg-purple-100 text-purple-600">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <h3 class="text-gray-500 text-sm mb-1">إجمالي المنتجات</h3>
+                <div class="flex items-center justify-between">
+                    <span class="text-3xl font-bold text-gray-800" id="total-products">0</span>
+                    <span class="badge badge-warning" id="low-stock-count">0 منخفض</span>
+                </div>
+                <p class="text-xs text-gray-400 mt-2">
+                    <i class="fas fa-exclamation-triangle ml-1 text-yellow-500"></i>
+                    <span id="out-of-stock">0</span> منتج نفذ
+                </p>
+            </div>
+
+            <!-- بطاقة العملاء -->
+            <div class="stat-card" data-aos="fade-up" data-aos-delay="400">
+                <div class="stat-icon bg-orange-100 text-orange-600">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="text-gray-500 text-sm mb-1">إجمالي العملاء</h3>
+                <div class="flex items-center justify-between">
+                    <span class="text-3xl font-bold text-gray-800" id="total-customers">0</span>
+                    <span class="badge badge-info">نشط</span>
+                </div>
+                <p class="text-xs text-gray-400 mt-2">
+                    <i class="fas fa-user-plus ml-1 text-green-500"></i>
+                    <span id="new-customers">0</span> عميل جديد
+                </p>
+            </div>
+        </div>
+
+        <!-- ==================== الرسوم البيانية ==================== -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- رسم بياني للمبيعات -->
+            <div class="bg-white rounded-2xl shadow-xl p-6" data-aos="fade-left">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold flex items-center gap-2">
+                        <i class="fas fa-chart-line text-blue-600"></i>
+                        تحليل المبيعات (آخر 7 أيام)
+                    </h2>
+                    <select id="sales-chart-period" class="border rounded-lg px-3 py-2 text-sm">
+                        <option value="7">آخر 7 أيام</option>
+                        <option value="30">آخر 30 يوم</option>
+                        <option value="90">آخر 3 أشهر</option>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+
+            <!-- رسم بياني للمنتجات الأكثر مبيعاً -->
+            <div class="bg-white rounded-2xl shadow-xl p-6" data-aos="fade-right">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold flex items-center gap-2">
+                        <i class="fas fa-chart-pie text-purple-600"></i>
+                        المنتجات الأكثر مبيعاً
+                    </h2>
+                    <span class="text-sm text-gray-500">هذا الشهر</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="topProductsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== جداول وملخصات ==================== -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- آخر الطلبات -->
+            <div class="lg:col-span-2 bg-white rounded-2xl shadow-xl p-6" data-aos="fade-up">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold flex items-center gap-2">
+                        <i class="fas fa-history text-blue-600"></i>
+                        آخر الطلبات
+                    </h2>
+                    <a href="orders.html" class="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1">
+                        عرض الكل <i class="fas fa-arrow-left"></i>
+                    </a>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-100">
+                              <tr>
+                                <th class="px-4 py-3 text-right">رقم الفاتورة</th>
+                                <th class="px-4 py-3 text-right">التاريخ</th>
+                                <th class="px-4 py-3 text-right">العميل</th>
+                                <th class="px-4 py-3 text-right">الإجمالي</th>
+                                <th class="px-4 py-3 text-right">الحالة</th>
+                              </tr>
+                        </thead>
+                        <tbody id="recent-orders-table">
+                            <tr>
+                                <td colspan="5" class="text-center py-8 text-gray-500">
+                                    <i class="fas fa-spinner fa-spin text-2xl"></i>
+                                    <p class="mt-2">جاري تحميل الطلبات...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- المنتجات المنخفضة -->
+            <div class="bg-white rounded-2xl shadow-xl p-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold flex items-center gap-2">
+                        <i class="fas fa-exclamation-triangle text-yellow-500"></i>
+                        منتجات منخفضة (أقل من 5)
+                    </h2>
+                    <span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm" id="low-stock-badge">0</span>
+                </div>
+                
+                <div class="space-y-4" id="low-stock-list">
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-spinner fa-spin text-2xl"></i>
+                        <p class="mt-2">جاري التحميل...</p>
+                    </div>
+                </div>
+                
+                <a href="products.html" class="block text-center text-blue-600 hover:text-blue-800 text-sm mt-4">
+                    إدارة المنتجات <i class="fas fa-arrow-left mr-1"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- ==================== نشاط المستخدمين ==================== -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 mb-8" data-aos="fade-up">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold flex items-center gap-2">
+                    <i class="fas fa-activity text-green-600"></i>
+                    آخر النشاطات
+                </h2>
+                <div class="flex gap-2">
+                    <span class="bg-green-100 text-green-600 px-3 py-1 rounded-full text-sm flex items-center gap-1">
+                        <i class="fas fa-circle text-xs"></i>
+                        متصل الآن: <span id="online-users">1</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="space-y-4" id="activity-log">
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-clock"></i>
+                    <p>سيتم عرض آخر النشاطات قريباً</p>
+                </div>
             </div>
         </div>
     </div>
-    <div class="sidebar-links" style="padding: 15px 0;">
-        <div style="padding: 10px 25px; font-size: 11px; color: #95a5a6; font-weight: bold;">إدارة البيانات</div>
-        <a href="products.html" class="nav-link">📦 المنتجات</a>
-        <a href="categories.html" class="nav-link">🗂️ الأصناف</a>
-        <a href="customers.html" class="nav-link">👥 العملاء</a>
-        <a href="users.html" class="nav-link">👤 المستخدمين (الموظفين)</a>
-		<a href="settings.html" class="nav-link">⚙️ الإعدادات</a>
-        <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
-        <a href="#" onclick="logout()" class="nav-link" style="color: #e74c3c;">🚪 تسجيل الخروج</a>
+
+    <!-- ==================== نافذة التنبيه المخصصة ==================== -->
+    <div id="custom-alert-overlay" class="custom-alert-overlay">
+        <div class="custom-alert-box">
+            <div id="custom-alert-icon" class="custom-alert-icon"></div>
+            <p id="custom-alert-text" class="mb-6 text-gray-700 text-lg"></p>
+            <div id="custom-alert-btns" style="display: flex; gap: 10px; justify-content: center;"></div>
+        </div>
     </div>
-</div>
 
-    <div id="loading">جاري حساب الإحصائيات...</div>
-    <div class="dashboard-container" id="dashboard-content" style="display: none;">
-        
-        <div class="stat-card sales">
-            <h3>إجمالي المبيعات</h3>
-            <div class="value" id="total-sales">$0.00</div>
-        </div>
-
-        <div class="stat-card orders">
-            <h3>عدد الطلبات</h3>
-            <div class="value" id="total-orders">0</div>
-        </div>
-
-        <div class="stat-card products">
-            <h3>المنتجات المسجلة</h3>
-            <div class="value" id="total-products">0</div>
-        </div>
-
-        <div class="stat-card customers">
-            <h3>العملاء المسجلين</h3>
-            <div class="value" id="total-customers">0</div>
-        </div>
-
-    </div>
-	<nav class="bottom-nav" style="position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; background: white; padding: 10px 0; border-top: 1px solid #eee; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000;">
-    <a href="dashboard.html" class="b-nav-item active">🏠<br>الرئيسية</a>
-    <a href="pos.html" class="b-nav-item">📱<br>نقطة البيع</a>
-    <a href="orders.html" class="b-nav-item">🧾<br>الطلبات</a>
-    <a href="reports.html" class="b-nav-item">📊<br>التقارير</a>
-</nav>
-    <script src="js/alert.js"></script>
-    <script src="js/auth.js"></script>
+    <!-- ==================== السكريبتات الأساسية ==================== -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="js/supabase-config.js"></script>
-    <script src="js/UserManager.js"></script> <!-- تمت الإضافة -->
+    <script src="js/auth.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/alert.js"></script>
+    <script src="js/UserManager.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/Navigation.js"></script>
+
     <script>
-        async function fetchDashboardStats() {
-            try {
-                // 1. جلب بيانات المبيعات والطلبات
-                const { data: orders, error: ordersError } = await supabaseClient
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+
+        // ==================== كود التحكم الخاص بلوحة التحكم (Dashboard) ====================
+        const Dashboard = {
+            username: localStorage.getItem('username') || 'مستخدم',
+            role: localStorage.getItem('user_role') || 'cashier',
+
+            init: function() {
+                if (!localStorage.getItem('login')) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                this.updateUserInfo();
+                this.toggleAdminSections();
+                this.loadDashboardData();
+                this.setupEventListeners();
+            },
+
+            updateUserInfo: function() {
+                const elements = {
+                    'greeting-name': this.username,
+                    'greeting-icon': this.role === 'admin' ? '👨‍💼' : '🧑‍💻'
+                };
+                Object.entries(elements).forEach(([id, value]) => {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = value;
+                });
+                document.getElementById('last-update-time').textContent = new Date().toLocaleString('ar-IQ');
+            },
+
+            toggleAdminSections: function() {
+                // التحكم في ظهور عناصر خاصة بالمدير (إن وجدت)
+                // يمكن إضافة أي عناصر إضافية هنا
+            },
+
+            setupEventListeners: function() {
+                // تغيير الفترة في الرسم البياني
+                const periodSelect = document.getElementById('sales-chart-period');
+                if (periodSelect) {
+                    periodSelect.addEventListener('change', () => this.loadChartsData());
+                }
+            },
+
+            loadDashboardData: async function() {
+                try {
+                    await Promise.all([
+                        this.loadSalesData(),
+                        this.loadOrdersData(),
+                        this.loadProductsData(),
+                        this.loadCustomersData(),
+                        this.loadChartsData(),
+                        this.loadTopProductsChart()
+                    ]);
+                } catch (error) {
+                    console.error('خطأ في تحميل البيانات:', error);
+                    alert('حدث خطأ في تحميل البيانات');
+                }
+            },
+
+            loadSalesData: async function() {
+                const today = new Date().toISOString().split('T')[0];
+                const { data: todaySales, error } = await supabaseClient
                     .from('orders')
-                    .select('total_amount');
-                
-                if (ordersError) throw ordersError;
+                    .select('total_amount')
+                    .gte('created_at', today);
+                if (!error && todaySales) {
+                    const total = todaySales.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+                    document.getElementById('today-sales').textContent = this.formatPrice(total);
+                    // تحديث في السايدبار أيضاً إن وجد
+                    const sidebarSales = document.getElementById('sidebar-today-sales');
+                    if (sidebarSales) sidebarSales.textContent = this.formatPrice(total);
+                }
 
-                const totalOrders = orders.length;
-                const totalSales = orders.reduce((sum, order) => sum + parseFloat(order.total_amount), 0);
+                const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+                const { data: yesterdaySales } = await supabaseClient
+                    .from('orders')
+                    .select('total_amount')
+                    .gte('created_at', yesterday)
+                    .lt('created_at', today);
+                if (yesterdaySales && yesterdaySales.length > 0) {
+                    const yesterdayTotal = yesterdaySales.reduce((s, o) => s + (o.total_amount || 0), 0);
+                    const total = todaySales ? todaySales.reduce((s, o) => s + (o.total_amount || 0), 0) : 0;
+                    const change = yesterdayTotal > 0 ? ((total - yesterdayTotal) / yesterdayTotal * 100).toFixed(1) : 100;
+                    const changeEl = document.getElementById('sales-change');
+                    changeEl.textContent = (change > 0 ? '+' : '') + change + '%';
+                    changeEl.className = `badge ${change >= 0 ? 'badge-success' : 'badge-danger'}`;
+                }
+            },
 
-                // 2. جلب عدد المنتجات
-                const { count: productsCount, error: productsError } = await supabaseClient
+            loadOrdersData: async function() {
+                const today = new Date().toISOString().split('T')[0];
+                const { data: orders, error } = await supabaseClient
+                    .from('orders')
+                    .select('id, created_at, total_amount, customer_id, customers(name)')
+                    .gte('created_at', today)
+                    .order('created_at', { ascending: false });
+
+                if (!error && orders) {
+                    document.getElementById('today-orders').textContent = orders.length;
+                    // تحديث عداد الطلبات الجديدة في السايدبار إن وجد
+                    const newOrdersCount = document.getElementById('new-orders-count');
+                    if (newOrdersCount) newOrdersCount.textContent = orders.length;
+                    this.displayRecentOrders(orders.slice(0, 5));
+                }
+            },
+
+            displayRecentOrders: function(orders) {
+                const tbody = document.getElementById('recent-orders-table');
+                if (orders.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-gray-500"><i class="fas fa-inbox text-4xl mb-2"></i><p>لا توجد طلبات اليوم</p></td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = orders.map(order => `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-4 py-3">#${order.id}</td>
+                        <td class="px-4 py-3">${new Date(order.created_at).toLocaleTimeString('ar-IQ')}</td>
+                        <td class="px-4 py-3">${order.customers?.name || 'عميل نقدي'}</td>
+                        <td class="px-4 py-3 font-bold">${this.formatPrice(order.total_amount)}</td>
+                        <td class="px-4 py-3"><span class="badge badge-success">مكتمل</span></td>
+                    </tr>
+                `).join('');
+            },
+
+            loadProductsData: async function() {
+                const { data: products, error } = await supabaseClient
                     .from('products')
-                    .select('*', { count: 'exact', head: true });
+                    .select('name, stock_quantity, category_id');
+                if (!error && products) {
+                    document.getElementById('total-products').textContent = products.length;
+                    const sidebarTotal = document.getElementById('sidebar-total-products');
+                    if (sidebarTotal) sidebarTotal.textContent = products.length;
+                    const lowStock = products.filter(p => p.stock_quantity <= 5);
+                    const outOfStock = products.filter(p => p.stock_quantity === 0);
+                    document.getElementById('low-stock-count').textContent = lowStock.length + ' منخفض';
+                    document.getElementById('low-stock-badge').textContent = lowStock.length;
+                    document.getElementById('out-of-stock').textContent = outOfStock.length;
+                    this.displayLowStockProducts(lowStock);
+                }
+            },
 
-                if (productsError) throw productsError;
+            displayLowStockProducts: function(products) {
+                const container = document.getElementById('low-stock-list');
+                if (products.length === 0) {
+                    container.innerHTML = `<div class="text-center py-8 text-gray-500"><i class="fas fa-check-circle text-4xl text-green-500 mb-2"></i><p>لا توجد منتجات منخفضة</p></div>`;
+                    return;
+                }
+                container.innerHTML = products.slice(0, 5).map(p => `
+                    <div class="flex items-center justify-between p-3 bg-red-50 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-box text-red-500"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold">${p.name}</h4>
+                                <p class="text-xs text-gray-500">${p.category_name || 'بدون صنف'}</p>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <span class="block font-bold text-red-600">${p.stock_quantity}</span>
+                            <span class="text-xs text-gray-500">متبقي</span>
+                        </div>
+                    </div>
+                `).join('');
+            },
 
-                // 3. جلب عدد العملاء
-                const { count: customersCount, error: customersError } = await supabaseClient
-                    .from('customers')
-                    .select('*', { count: 'exact', head: true });
+            loadCustomersData: async function() {
+                const { data: customers, error } = await supabaseClient.from('customers').select('*');
+                if (!error && customers) {
+                    document.getElementById('total-customers').textContent = customers.length;
+                    const firstDay = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+                    const newCustomers = customers.filter(c => c.created_at >= firstDay);
+                    document.getElementById('new-customers').textContent = newCustomers.length;
+                }
+            },
 
-                if (customersError) throw customersError;
+            loadChartsData: async function() {
+                const period = document.getElementById('sales-chart-period').value;
+                let days = 7;
+                if (period === '30') days = 30;
+                else if (period === '90') days = 90;
+                
+                const labels = [];
+                const salesData = [];
+                for (let i = days - 1; i >= 0; i--) {
+                    const date = new Date(Date.now() - i * 86400000).toISOString().split('T')[0];
+                    labels.push(date);
+                    const { data: daySales } = await supabaseClient
+                        .from('orders')
+                        .select('total_amount')
+                        .gte('created_at', date)
+                        .lt('created_at', new Date(new Date(date).getTime() + 86400000).toISOString());
+                    const total = daySales?.reduce((sum, o) => sum + (o.total_amount || 0), 0) || 0;
+                    salesData.push(total);
+                }
+                this.createSalesChart(labels, salesData);
+            },
 
-                // تحديث واجهة المستخدم
-                document.getElementById('total-sales').innerText = `$${totalSales.toFixed(2)}`;
-                document.getElementById('total-orders').innerText = totalOrders;
-                document.getElementById('total-products').innerText = productsCount || 0;
-                document.getElementById('total-customers').innerText = customersCount || 0;
+            createSalesChart: function(labels, data) {
+                const ctx = document.getElementById('salesChart')?.getContext('2d');
+                if (!ctx) return;
+                // تدمير الرسم البياني القديم إن وجد
+                if (window.salesChartInstance) window.salesChartInstance.destroy();
+                window.salesChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels.map(d => new Date(d).toLocaleDateString('ar-IQ', { weekday: 'short', month: 'numeric', day: 'numeric' })),
+                        datasets: [{
+                            label: 'المبيعات',
+                            data: data,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                });
+            },
 
-                // إخفاء التحميل وإظهار الكروت
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('dashboard-content').style.display = 'grid';
+            loadTopProductsChart: async function() {
+                const firstDay = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+                const { data: items, error } = await supabaseClient
+                    .from('order_items')
+                    .select('product_id, quantity, price_at_time, products(name)')
+                    .gte('created_at', firstDay);
+                if (error || !items) return;
 
-            } catch (error) {
-                console.error("خطأ في جلب الإحصائيات:", error);
-                document.getElementById('loading').innerText = "حدث خطأ أثناء تحميل البيانات.";
+                const productMap = {};
+                items.forEach(item => {
+                    const name = item.products?.name || 'منتج غير معروف';
+                    const revenue = item.quantity * item.price_at_time;
+                    if (!productMap[name]) productMap[name] = 0;
+                    productMap[name] += revenue;
+                });
+                const sorted = Object.entries(productMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+                const labels = sorted.map(p => p[0]);
+                const data = sorted.map(p => p[1]);
+
+                const ctx = document.getElementById('topProductsChart')?.getContext('2d');
+                if (!ctx) return;
+                if (window.topProductsChartInstance) window.topProductsChartInstance.destroy();
+                window.topProductsChartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels.length ? labels : ['لا توجد بيانات'],
+                        datasets: [{
+                            data: data.length ? data : [1],
+                            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+                });
+            },
+
+            formatPrice: function(price) {
+                return 'د.ع ' + Number(price || 0).toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
             }
-        }
-        fetchDashboardStats();
+        };
+
+        // ==================== تهيئة الصفحة ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            Dashboard.init();
+            // إغلاق السايدبار عند الضغط على ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    const sidebar = document.getElementById('sidebar');
+                    const overlay = document.getElementById('sidebar-overlay');
+                    if (sidebar && !sidebar.classList.contains('translate-x-full')) {
+                        sidebar.classList.add('translate-x-full');
+                        overlay.classList.add('hidden');
+                    }
+                }
+            });
+            // تحديث الوقت كل دقيقة
+            setInterval(() => {
+                const timeEl = document.getElementById('last-update-time');
+                if (timeEl) timeEl.textContent = new Date().toLocaleString('ar-IQ');
+            }, 60000);
+        });
+
+        // ربط دوال مساعدة للنوافذ
+        window.formatPrice = (price) => Dashboard.formatPrice(price);
     </script>
 </body>
 </html>

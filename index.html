@@ -4,128 +4,214 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#34495e">
     <title>تسجيل الدخول - Mobile POS</title>
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome للأيقونات -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- خط Tajawal -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    
     <style>
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             font-family: 'Tajawal', sans-serif;
         }
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
     </style>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#34495e">
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
 
     <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
         <div class="text-center">
-            <div class="text-6xl mb-4">🏪</div>
             <h2 class="text-3xl font-bold text-gray-800 mb-6 flex items-center justify-center gap-2">
-                <i class="fas fa-cash-register text-blue-600"></i> نظام الكاشير
+                <i class="fas fa-cash-register text-blue-600"></i> 
+                نظام الكاشير
             </h2>
+        </div>
+        
+        <!-- ملاحظة الحساب التجريبي - تم تحسينها -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-sm">
+            <div class="flex items-start gap-3">
+                <i class="fas fa-info-circle text-blue-500 mt-1"></i>
+                <div class="text-right">
+                    <p class="font-bold text-blue-700 mb-2">بيانات الدخول التجريبي:</p>
+                    <p class="text-gray-600">اسم المستخدم : admin</p>
+                    <p class="text-gray-600">كلمة المرور: 1234</p>
+                    <button onclick="fillDemo()" 
+                            class="mt-2 text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
+                        <i class="fas fa-arrow-left text-xs"></i>
+                        اضغط لملء البيانات
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div class="space-y-4">
             <!-- حقل اسم المستخدم مع أيقونة -->
             <div class="relative">
                 <i class="fas fa-user absolute text-gray-400 right-3 top-1/2 transform -translate-y-1/2"></i>
-                <input type="text" id="username" placeholder="اسم المستخدم (مثال: admin)"
-                       class="w-full pr-10 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-right">
+                <input type="text" id="username" 
+                       placeholder="اسم المستخدم (مثال: admin)"
+                       class="w-full pr-10 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-right transition"
+                       autocomplete="off">
             </div>
             
-            <!-- حقل كلمة المرور مع أيقونة القفل وأيقونة العين لإظهار/إخفاء -->
+            <!-- حقل كلمة المرور مع أيقونات -->
             <div class="relative">
                 <i class="fas fa-lock absolute text-gray-400 right-3 top-1/2 transform -translate-y-1/2"></i>
-                <i class="fas fa-eye absolute text-gray-400 left-3 top-1/2 transform -translate-y-1/2 cursor-pointer hover:text-blue-600 transition" id="togglePassword"></i>
-                <input type="password" id="password" placeholder="كلمة المرور (مثال: 1234)"
-                       class="w-full pr-10 pl-10 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-right">
+                <i class="fas fa-eye absolute text-gray-400 left-3 top-1/2 transform -translate-y-1/2 cursor-pointer hover:text-blue-600 transition" 
+                   id="togglePassword"></i>
+                <input type="password" id="password" 
+                       placeholder="كلمة المرور (مثال: 1234)"
+                       class="w-full pr-10 pl-10 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-right transition">
             </div>
             
-            <!-- رابط الحساب التجريبي بشكل محسن وجذاب -->
-            <div class="flex justify-center mt-2">
-                <button onclick="fillDemo()" 
-                        class="bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium py-2 px-4 rounded-full transition duration-200 flex items-center gap-2 border border-blue-200 shadow-sm">
-                    <i class="fas fa-magic text-blue-500"></i>
-                    <span>حساب تجريبي: admin / 1234</span>
-                    <i class="fas fa-arrow-left text-blue-500 text-sm"></i>
-                </button>
-            </div>
-            
-            <button id="login-btn" onclick="performLogin()"
-                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition duration-200 transform hover:scale-105 flex items-center justify-center gap-2 mt-4">
-                <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+            <button onclick="performLogin()" id="login-btn"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition duration-200 transform hover:scale-105 flex items-center justify-center gap-2 mt-4 shadow-lg hover:shadow-xl">
+                <i class="fas fa-sign-in-alt"></i> 
+                تسجيل الدخول
             </button>
             
-            <p id="error" class="text-red-500 text-sm text-center mt-2"></p>
+            <div id="error" class="text-red-500 text-sm text-center mt-2 min-h-[24px]"></div>
         </div>
     </div>
 
     <!-- السكريبتات -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="js/supabase-config.js"></script>
     
     <script>
-        // تنظيف أي جلسة سابقة
-        localStorage.clear();
+        // انتظار تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            // تنظيف أي جلسة سابقة
+            localStorage.clear();
+            
+            // إضافة مستمع الحدث لعرض/إخفاء كلمة المرور
+            setupPasswordToggle();
+            
+            // إضافة مستمع الحدث للإدخال بالضغط على Enter
+            setupEnterKeyListener();
+        });
 
-        // دالة لملء بيانات الحساب التجريبي
+        // دالة إعداد toggle كلمة المرور
+        function setupPasswordToggle() {
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('password');
+
+            togglePassword.addEventListener('click', function() {
+                // تبديل نوع الحقل
+                const type = passwordInput.type === 'password' ? 'text' : 'password';
+                passwordInput.type = type;
+                
+                // تبديل شكل الأيقونة
+                if (type === 'password') {
+                    this.classList.remove('fa-eye-slash');
+                    this.classList.add('fa-eye');
+                } else {
+                    this.classList.remove('fa-eye');
+                    this.classList.add('fa-eye-slash');
+                }
+            });
+        }
+
+        // دالة إعداد مستمع الضغط على Enter
+        function setupEnterKeyListener() {
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+
+            passwordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performLogin();
+                }
+            });
+
+            usernameInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    passwordInput.focus();
+                }
+            });
+        }
+
+        // دالة ملء بيانات الحساب التجريبي
         function fillDemo() {
             document.getElementById('username').value = 'admin';
             document.getElementById('password').value = '1234';
-            document.getElementById('username').focus();
+            document.getElementById('password').type = 'password';
+            
+            // تغيير أيقونة العين إذا كانت مفتوحة
+            const toggleIcon = document.getElementById('togglePassword');
+            if (!toggleIcon.classList.contains('fa-eye')) {
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+            
+            // إضافة تأثير مؤقت للزر
+            const demoBtn = event.currentTarget;
+            demoBtn.innerHTML = '<i class="fas fa-check"></i> تم الملء';
+            setTimeout(() => {
+                demoBtn.innerHTML = '<i class="fas fa-arrow-left text-xs"></i> اضغط لملء البيانات';
+            }, 1500);
         }
 
-        // دالة إظهار/إخفاء كلمة المرور
-        const togglePassword = document.getElementById('togglePassword');
-        const passwordInput = document.getElementById('password');
-
-        togglePassword.addEventListener('click', function() {
-            // تبديل نوع الحقل بين password و text
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            
-            // تبديل شكل الأيقونة
-            this.classList.toggle('fa-eye');
-            this.classList.toggle('fa-eye-slash');
-        });
-
+        // دالة تسجيل الدخول
         async function performLogin() {
-            const user = document.getElementById("username").value.trim();
-            const pass = document.getElementById("password").value.trim();
-            const errorMsg = document.getElementById("error");
-            const btn = document.getElementById("login-btn");
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+            const errorMsg = document.getElementById('error');
+            const btn = document.getElementById('login-btn');
 
-            if(!user || !pass){
-                errorMsg.innerText = "الرجاء إدخال اسم المستخدم وكلمة المرور!";
+            // التحقق من المدخلات
+            if (!user || !pass) {
+                errorMsg.innerText = '❌ الرجاء إدخال اسم المستخدم وكلمة المرور';
                 return;
             }
 
+            // تغيير حالة الزر
+            const originalBtnText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحقق...';
             btn.disabled = true;
+            errorMsg.innerText = '';
 
-            const { data, error } = await supabaseClient
-                .from('users')
-                .select('*')
-                .eq('username', user)
-                .eq('password_hash', pass)
-                .single();
+            try {
+                // محاولة تسجيل الدخول
+                const { data, error } = await supabaseClient
+                    .from('users')
+                    .select('*')
+                    .eq('username', user)
+                    .eq('password_hash', pass)
+                    .single();
 
-            if (error || !data) {
-                errorMsg.innerText = "اسم المستخدم أو كلمة المرور غير صحيحة!";
-                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> تسجيل الدخول الي شاشة';
+                if (error || !data) {
+                    // فشل تسجيل الدخول
+                    errorMsg.innerText = '❌ اسم المستخدم أو كلمة المرور غير صحيحة';
+                    btn.innerHTML = originalBtnText;
+                    btn.disabled = false;
+                    
+                    // تنظيف الحقول
+                    document.getElementById('password').value = '';
+                    document.getElementById('password').focus();
+                } else {
+                    // نجاح تسجيل الدخول
+                    localStorage.setItem('login', 'true');
+                    localStorage.setItem('user_id', data.id);
+                    localStorage.setItem('username', data.username);
+                    localStorage.setItem('user_role', data.role);
+                    localStorage.setItem('login_time', new Date().toISOString());
+
+                    // توجيه المستخدم
+                    window.location.href = 'pos.html';
+                }
+            } catch (err) {
+                // خطأ غير متوقع
+                errorMsg.innerText = '❌ حدث خطأ في الاتصال';
+                btn.innerHTML = originalBtnText;
                 btn.disabled = false;
-            } else {
-                localStorage.setItem("login", "true");
-                localStorage.setItem("user_id", data.id);
-                localStorage.setItem("username", data.username);
-                localStorage.setItem("user_role", data.role);
-
-                window.location.href = "pos.html";
+                console.error('Login error:', err);
             }
         }
     </script>

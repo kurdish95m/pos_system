@@ -4,118 +4,124 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
-    <title>الطلبات - Mobile POS</title>
+    <title>سجل الطلبات - Modern POS</title>
     
- <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; padding-bottom: 90px; }
+        .order-card { transition: all 0.2s ease; cursor: pointer; }
+        .order-card:active { transform: scale(0.98); }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+		
+		      .bottom-nav-item:hover {
+            background: #e2e8f0;
+        }
+
+        .bottom-nav-item.active {
+            background: #3b82f6;
+            color: white !important;
+        }
+    </style>
 </head>
 <body>
-	<header style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #2c3e50; color: white; position: sticky; top: 0; z-index: 1000;">
-    <div style="display: flex; align-items: center; gap: 12px;">
-        <span onclick="toggleSidebar()" style="font-size: 24px; cursor: pointer; padding: 5px;">☰</span>
-        <h2 style="margin:0; font-size: 1.1rem;">🧾 سجل الفواتير</h2>
-    </div>
-    <div id="header-actions">
-        <div id="user-greeting" style="font-size: 0.8rem; opacity: 0.8;"></div>
-    </div>
-</header>
 
-<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
-<div class="sidebar" id="sidebar">
-    <div class="sidebar-header" style="background: #34495e; padding: 30px 20px; color: white;">
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <div style="width: 50px; height: 50px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
-            <div>
-                <h3 id="side-user-name" style="margin:0; font-size: 16px;">إسماعيل</h3>
-                <span style="font-size: 12px; color: #2ecc71;">● مدير النظام</span>
+    <div id="sidebar-placeholder"></div>
+    <div id="nav-placeholder"></div>
+
+    <main class="max-w-4xl mx-auto p-4">
+        <div class="flex flex-col gap-4 mb-6">
+            <h1 class="text-2xl font-black text-slate-800 flex items-center gap-2">
+                <i class="fas fa-file-invoice-dollar text-blue-600"></i> سجل الفواتير
+            </h1>
+            
+            <div class="relative">
+                <i class="fas fa-search absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="text" id="search-order" placeholder="ابحث برقم الفاتورة، اسم العميل، أو الكاشير..." onkeyup="handleSearch()" 
+                    class="w-full pr-12 pl-4 py-3 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all">
             </div>
         </div>
-    </div>
-    <div class="sidebar-links" style="padding: 15px 0;">
-        <div style="padding: 10px 25px; font-size: 11px; color: #95a5a6; font-weight: bold;">إدارة البيانات</div>
-        <a href="products.html" class="nav-link">📦 المنتجات</a>
-        <a href="categories.html" class="nav-link">🗂️ الأصناف</a>
-        <a href="customers.html" class="nav-link">👥 العملاء</a>
-        <a href="users.html" class="nav-link">👤 المستخدمين (الموظفين)</a>
-		<a href="settings.html" class="nav-link">⚙️ الإعدادات</a>
-        <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
-        <a href="#" onclick="logout()" class="nav-link" style="color: #e74c3c;">🚪 تسجيل الخروج</a>
-    </div>
-</div>
 
-<nav class="bottom-nav" style="position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; background: white; padding: 10px 0; border-top: 1px solid #eee; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000;">
-    <a href="dashboard.html" class="b-nav-item">🏠<br>الرئيسية</a>
-    <a href="pos.html" class="b-nav-item">📱<br>نقطة البيع</a>
-    <a href="orders.html" class="b-nav-item active">🧾<br>الطلبات</a>
-    <a href="reports.html" class="b-nav-item">📊<br>التقارير</a>
-</nav>
+        <div id="summary-box" class="grid grid-cols-2 gap-3 mb-6">
+            </div>
 
-    <div class="controls-area">
-        <input type="text" id="search-order" placeholder="🔍 ابحث برقم الفاتورة أو اسم العميل..." onkeyup="handleSearch()">
-    </div>
+        <div id="loading" class="flex flex-col items-center justify-center py-20 text-slate-400">
+            <div class="animate-spin text-3xl mb-4 text-blue-600"><i class="fas fa-circle-notch"></i></div>
+            <p class="text-sm font-bold">جاري تحميل السجل...</p>
+        </div>
 
-    <div class="summary-box" id="summary-box">
-        <span>🧾 الفواتير: 0</span>
-        <span>💰 الإجمالي: $0.00</span>
-    </div>
+        <div id="orders-list" class="space-y-3">
+            </div>
+    </main>
 
-    <div id="loading">جاري تحميل الفواتير...</div>
-    <div id="orders-list" class="orders-list"></div>
-
-
-    <div class="modal-overlay" id="modal-overlay" onclick="closeInvoiceModal()"></div>
-    <div class="invoice-modal" id="invoice-modal">
-        <div class="invoice-header">
-            <h3>تفاصيل الفاتورة</h3>
-            <button class="close-btn" onclick="closeInvoiceModal()">✖</button>
+    <div id="modal-overlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[1100] hidden transition-opacity" onclick="closeInvoiceModal()"></div>
+    
+    <div id="invoice-modal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-lg bg-white rounded-3xl shadow-2xl z-[1101] hidden flex flex-col max-h-[90vh] overflow-hidden transform transition-all scale-95 opacity-0">
+        <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+            <h3 class="font-black text-slate-800 flex items-center gap-2">
+                <i class="fas fa-receipt text-blue-600"></i> تفاصيل الفاتورة
+            </h3>
+            <button onclick="closeInvoiceModal()" class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-red-500 transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
         
-        <div class="invoice-body" id="invoice-body"></div>
+        <div id="invoice-body" class="p-5 overflow-y-auto custom-scrollbar flex-1">
+            </div>
 
-        <button class="print-btn" id="print-btn" onclick="printReceipt()">🖨️ طباعة الفاتورة (80mm)</button>
+        <div class="p-4 bg-slate-50 border-t border-slate-100 flex gap-3">
+            <button onclick="printReceipt()" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white py-3 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-slate-200 transition-all active:scale-95">
+                <i class="fas fa-print"></i> طباعة (80mm)
+            </button>
+        </div>
     </div>
 
-    <script src="js/alert.js"></script>
-    <script src="js/auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
     <script src="js/utils.js"></script>
-    <script src="js/UserManager.js"></script> <!-- تمت الإضافة -->
-<script>
+    <script src="js/UserManager.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/Navigation.js"></script>
+
+    <script>
         let allOrders = []; 
         let currentOrderForPrint = null; 
         let currentItemsForPrint = [];
-function updateSummary(ordersArray) {
-    const totalOrders = ordersArray.length;
-    const totalAmount = ordersArray.reduce((sum, order) => sum + parseFloat(order.total_amount), 0);
-    
-    document.getElementById('summary-box').innerHTML = `
-        <span>🧾 الفواتير: ${totalOrders}</span>
-        <span>💰 الإجمالي: ${formatCurrencyPrice(totalAmount)}</span>
-    `;
-}
 
-        function normalizeArabic(text) {
-            if (!text) return '';
-            return String(text).replace(/[أإآا]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').toLowerCase();
+        function updateSummary(ordersArray) {
+            const totalOrders = ordersArray.length;
+            const totalAmount = ordersArray.reduce((sum, order) => sum + parseFloat(order.total_amount), 0);
+            
+            document.getElementById('summary-box').innerHTML = `
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">عدد الفواتير</p>
+                    <div class="text-xl font-black text-slate-800">${totalOrders} <span class="text-xs font-normal text-slate-400 mr-1">فاتورة</span></div>
+                </div>
+                <div class="bg-blue-600 p-4 rounded-2xl shadow-lg shadow-blue-100">
+                    <p class="text-[10px] font-bold text-blue-100 uppercase tracking-wider mb-1">إجمالي المبيعات</p>
+                    <div class="text-xl font-black text-white">${formatCurrencyPrice(totalAmount)}</div>
+                </div>
+            `;
         }
 
         async function fetchOrders() {
-            // تم إضافة users ( username ) لجلب اسم الموظف من قاعدة البيانات
             const { data: orders, error } = await supabaseClient
                 .from('orders')
                 .select('id, total_amount, created_at, customers ( name ), users ( username )') 
                 .order('created_at', { ascending: false });
 
-            const loadingDiv = document.getElementById('loading');
-
             if (error) {
-                loadingDiv.innerText = "حدث خطأ في جلب الفواتير.";
+                document.getElementById('loading').innerHTML = `<p class="text-red-500 font-bold">حدث خطأ في جلب البيانات</p>`;
                 return;
             }
 
-            loadingDiv.style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
             allOrders = orders; 
-            
             updateSummary(allOrders); 
             renderOrders(allOrders); 
         }
@@ -125,67 +131,59 @@ function updateSummary(ordersArray) {
             listDiv.innerHTML = '';
 
             if(ordersToRender.length === 0) {
-                listDiv.innerHTML = '<p style="text-align:center; color:#7f8c8d;">لا توجد فواتير مطابقة للبحث.</p>';
+                listDiv.innerHTML = `
+                    <div class="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
+                        <i class="fas fa-search text-4xl text-slate-200 mb-3"></i>
+                        <p class="text-slate-400 font-medium">لا توجد فواتير مطابقة</p>
+                    </div>`;
                 return;
             }
 
             ordersToRender.forEach(order => {
-                const item = document.createElement('div');
-                item.className = 'order-card';
-                
-                const date = new Date(order.created_at).toLocaleString('ar-EG');
+                const date = new Date(order.created_at).toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'short' });
                 const customerName = order.customers ? order.customers.name : 'زبون نقدي';
-                const cashierName = order.users ? order.users.username : 'غير معروف'; // جلب اسم الكاشير
+                const cashierName = order.users ? order.users.username : 'غير معروف';
 
-                // تمرير اسم الكاشير لـ viewInvoice
-                item.onclick = () => viewInvoice(order.id, order.total_amount, order.created_at, order.customers?.name, cashierName);
+                const card = document.createElement('div');
+                card.className = 'order-card bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center hover:border-blue-200';
+                card.onclick = () => viewInvoice(order.id, order.total_amount, order.created_at, customerName, cashierName);
 
-                item.innerHTML = `
-                    <div class="order-info">
-                        <h3>رقم الفاتورة: #${order.id}</h3>
-                        <p>👤 العميل: ${customerName}</p>
-                        <p>🧑‍💻 الكاشير: ${cashierName}</p>
-                        <p>📅 ${date}</p>
+                card.innerHTML = `
+                    <div class="flex gap-4 items-center">
+                        <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-blue-600 text-lg">
+                            <i class="fas fa-file-invoice"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-black text-slate-800 text-sm mb-1">فاتورة #${order.id}</h3>
+                            <div class="flex flex-col gap-0.5">
+                                <span class="text-[11px] text-slate-500"><i class="fas fa-user ml-1 text-[9px]"></i> ${customerName}</span>
+                                <span class="text-[11px] text-slate-400 tracking-tighter"><i class="fas fa-clock ml-1 text-[9px]"></i> ${date}</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="order-total">${formatCurrencyPrice(order.total_amount)}</div>
+                    <div class="text-left">
+                        <div class="text-emerald-600 font-black text-sm">${formatCurrencyPrice(order.total_amount)}</div>
+                        <div class="text-[9px] text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full mt-1 inline-block">${cashierName}</div>
+                    </div>
                 `;
-                listDiv.appendChild(item);
+                listDiv.appendChild(card);
             });
         }
 
-        function handleSearch() {
-            const rawSearchTerm = document.getElementById('search-order').value.trim();
-            const searchTerm = normalizeArabic(rawSearchTerm);
-            
-            if (searchTerm === '') {
-                updateSummary(allOrders);
-                renderOrders(allOrders); 
-                return;
-            }
-
-            const filteredOrders = allOrders.filter(order => {
-                const orderIdStr = order.id.toString();
-                const customerName = order.customers ? normalizeArabic(order.customers.name) : 'زبون نقدي';
-                const cashierName = order.users ? normalizeArabic(order.users.username) : 'غير معروف';
-                
-                // يمكنك البحث برقم الفاتورة، اسم العميل، أو اسم الكاشير!
-                return orderIdStr.includes(searchTerm) || customerName.includes(searchTerm) || cashierName.includes(searchTerm);
-            });
-
-            updateSummary(filteredOrders); 
-            renderOrders(filteredOrders); 
-        }
-
-        // تم إضافة cashierName كمعامل (parameter)
         async function viewInvoice(orderId, total, dateStr, customerName, cashierName) {
+            const overlay = document.getElementById('modal-overlay');
+            const modal = document.getElementById('invoice-modal');
+            const body = document.getElementById('invoice-body');
 
-            document.getElementById('modal-overlay').style.display = 'block';
-            document.getElementById('invoice-modal').style.display = 'flex';
-            document.getElementById('invoice-body').innerHTML = '<div style="text-align:center; padding: 20px;">جاري جلب المنتجات...</div>';
+            overlay.classList.remove('hidden');
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.add('scale-100', 'opacity-100'); modal.classList.remove('scale-95', 'opacity-0'); }, 10);
 
-            const date = new Date(dateStr).toLocaleString('ar-EG');
-            const cName = customerName || 'زبون نقدي';
-            const cCashier = cashierName || 'غير معروف'; // حفظ اسم الكاشير
+            body.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-10 animate-pulse">
+                    <i class="fas fa-spinner fa-spin text-2xl text-blue-500 mb-2"></i>
+                    <p class="text-xs text-slate-400">جاري تحميل الأصناف...</p>
+                </div>`;
 
             const { data: items, error } = await supabaseClient
                 .from('order_items')
@@ -194,109 +192,162 @@ function updateSummary(ordersArray) {
 
             if (error) return;
 
-            // إضافة اسم الكاشير لبيانات الطباعة
-            currentOrderForPrint = { id: orderId, total: total, date: date, customer: cName, cashier: cCashier };
+            currentOrderForPrint = { id: orderId, total, date: new Date(dateStr).toLocaleString('ar-EG'), customer: customerName, cashier: cashierName };
             currentItemsForPrint = items;
 
-            // أولاً: تحديث أسطر المنتجات
-let itemsHtml = items.map(i => `
-    <tr>
-        <td>${i.products?.name || 'منتج محذوف'}</td>
-        <td style="text-align:center;">${i.quantity}</td>
-		<td style="text-align:center;">${formatCurrency(i.price_at_time)}</td>
-        <td>${formatCurrency(i.quantity * i.price_at_time)}</td>
+       let itemsHtml = items.map(i => `
+    <tr class="border-b border-slate-50">
+        <td class="py-3 text-xs font-bold text-slate-700">${i.products?.name || 'منتج غير معروف'}</td>
+        <td class="py-3 text-center text-xs text-slate-500">${i.quantity}</td>
+        <td class="py-3 text-center text-xs text-slate-600">${formatCurrency(i.price_at_time)}</td> <!-- سعر الوحدة -->
+        <td class="py-3 text-left text-xs font-black text-slate-800">${formatCurrency(i.quantity * i.price_at_time)}</td>
     </tr>
 `).join('');
 
-            // عرض الكاشير في نافذة تفاصيل الفاتورة
-            document.getElementById('invoice-body').innerHTML = `
-                <div class="invoice-details-top">
-                    <p><strong>رقم الفاتورة:</strong> #${orderId}</p>
-                    <p><strong>العميل:</strong> ${cName}</p> 
-                    <p><strong>الكاشير:</strong> ${cCashier}</p> <p><strong>التاريخ:</strong> ${date}</p>
+            body.innerHTML = `
+                <div class="bg-blue-50 border border-blue-100 p-4 rounded-2xl mb-6">
+                    <div class="grid grid-cols-2 gap-y-2">
+                        <div><p class="text-[10px] text-blue-400 font-bold uppercase">العميل</p><p class="text-xs font-bold text-blue-900">${customerName}</p></div>
+                        <div class="text-left"><p class="text-[10px] text-blue-400 font-bold uppercase">الكاشير</p><p class="text-xs font-bold text-blue-900">${cashierName}</p></div>
+                        <div><p class="text-[10px] text-blue-400 font-bold uppercase">التاريخ</p><p class="text-xs font-bold text-blue-900">${currentOrderForPrint.date}</p></div>
+                        <div class="text-left"><p class="text-[10px] text-blue-400 font-bold uppercase">رقم الفاتورة</p><p class="text-xs font-bold text-blue-900">#${orderId}</p></div>
+                    </div>
                 </div>
-                <div class="invoice-items">
-                    <table>
-                        <thead>
-                            <tr>
-							<th>الصنف</th>
-							<th style="text-align:center;">الكمية</th>
-							<th style="text-align:center;">السعر</th>
-							<th>المجموع</th>
-							</tr>
-                        </thead>
-                        <tbody>${itemsHtml}</tbody>
-                    </table>
+
+                <table class="w-full mb-6">
+               <thead>
+    <tr class="text-[10px] text-slate-400 uppercase border-b border-slate-100">
+        <th class="pb-2 text-right">الصنف</th>
+        <th class="pb-2 text-center">الكمية</th>
+        <th class="pb-2 text-center">سعر الوحدة</th>   <!-- العمود الجديد -->
+        <th class="pb-2 text-left">المجموع</th>
+    </tr>
+</thead>
+                    <tbody>${itemsHtml}</tbody>
+                </table>
+
+                <div class="bg-slate-900 p-4 rounded-2xl flex justify-between items-center shadow-xl shadow-slate-200">
+                    <span class="text-slate-400 text-sm font-bold">الإجمالي النهائي</span>
+                    <span class="text-white text-xl font-black">${formatCurrencyPrice(total)}</span>
                 </div>
-                <div class="invoice-total">الإجمالي: ${formatCurrencyPrice(total)}</div>
             `;
         }
 
         function closeInvoiceModal() {
-            document.getElementById('modal-overlay').style.display = 'none';
-            document.getElementById('invoice-modal').style.display = 'none';
+            const modal = document.getElementById('invoice-modal');
+            const overlay = document.getElementById('modal-overlay');
+            modal.classList.add('scale-95', 'opacity-0');
+            modal.classList.remove('scale-100', 'opacity-100');
+            setTimeout(() => { overlay.classList.add('hidden'); modal.classList.add('hidden'); }, 300);
         }
 
-        function printReceipt() {
-            if (!currentOrderForPrint || currentItemsForPrint.length === 0) return;
-            let printContent = `
-                <html>
-                <head>
-                    <title>طباعة فاتورة #${currentOrderForPrint.id}</title>
-                    <style>
-                        @page { margin: 0; }
-                        body { font-family: 'Courier New', monospace; width: 72mm; margin: 0 auto; padding: 10px 0; color: #000; font-size: 12px; direction: rtl; }
-                        .header { text-align: center; margin-bottom: 10px; }
-                        .header h2 { margin: 0; font-size: 18px; }
-                        .header p { margin: 3px 0; font-size: 12px; }
-                        .divider { border-top: 1px dashed #000; margin: 8px 0; }
-                        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-                        th, td { text-align: right; padding: 4px 0; font-size: 12px; }
-                        th { border-bottom: 1px dashed #000; }
-                        .total-section { font-weight: bold; font-size: 14px; text-align: left; }
-                        .footer { text-align: center; margin-top: 15px; font-size: 12px; }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <h2>نظام نقاط البيع</h2>
-                        <p>فاتورة: #${currentOrderForPrint.id}</p>
-                        <p>العميل: ${currentOrderForPrint.customer}</p>
-                        <p>الكاشير: ${currentOrderForPrint.cashier}</p>
-                        <p>التاريخ: ${currentOrderForPrint.date}</p>
-                    </div>
-                    <div class="divider"></div>
-                    <table>
-                        <tr>
-						<th style="width: 30%;">الصنف</th>
-						<th style="width: 15%; text-align:center;">كمية</th>
-						<th style="width: 27.5%;">السعر</th>
-						<th style="width: 27.5%;">المجموع</th>
-						</tr>
-                        ${currentItemsForPrint.map(i => `
-                            <tr>
-                                <td>${i.products?.name || 'محذوف'}</td>
-                                <td style="text-align:center;">${i.quantity}</td>
-								<td style="text-align:center;">${formatCurrency(i.price_at_time)}</td>
-                                <td>${formatCurrency(i.quantity * i.price_at_time)}</td>
-                            </tr>
-                        `).join('')}
-                    </table>
-                    <div class="divider"></div>
-                    <div class="total-section">الإجمالي: ${formatCurrency(currentOrderForPrint.total)}</div>
-                    <div class="divider"></div>
-                    <div class="footer"><p>شكراً لزيارتكم!</p></div>
-                </body>
-                </html>
-            `;
-            let printWindow = window.open('', '_blank', 'width=400,height=600');
-            printWindow.document.write(printContent);
-            printWindow.document.close();
-            printWindow.focus();
-            setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
+        function handleSearch() {
+            const term = document.getElementById('search-order').value.trim().toLowerCase();
+            const filtered = allOrders.filter(o => {
+                const customer = o.customers ? o.customers.name.toLowerCase() : 'زبون نقدي';
+                const cashier = o.users ? o.users.username.toLowerCase() : 'غير معروف';
+                return o.id.toString().includes(term) || customer.includes(term) || cashier.includes(term);
+            });
+            updateSummary(filtered);
+            renderOrders(filtered);
         }
 
-        // تشغيل البداية
+function printReceipt() {
+    // التحقق من وجود بيانات للطباعة
+    if (!currentOrderForPrint || currentItemsForPrint.length === 0) return;
+
+    // حساب الإجمالي من العناصر للتأكد (يمكن استخدام total الموجود في الطلب)
+    // لكننا سنعتمد على total الموجود في order للاتساق
+    const total = currentOrderForPrint.total;
+
+    // بناء محتوى الفاتورة
+    const printContent = `
+        <html>
+        <head>
+            <title>طباعة فاتورة #${currentOrderForPrint.id}</title>
+            <style>
+                @page { margin: 0; }
+                body {
+                    font-family: 'Courier New', monospace;
+                    width: 72mm;
+                    margin: 0 auto;
+                    padding: 10px 0;
+                    color: #000;
+                    font-size: 12px;
+                    direction: rtl;
+                }
+                .header { text-align: center; margin-bottom: 10px; }
+                .header h2 { margin: 0; font-size: 18px; }
+                .header p { margin: 3px 0; font-size: 12px; }
+                .divider { border-top: 1px dashed #000; margin: 8px 0; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+                th, td { text-align: right; padding: 4px 0; font-size: 12px; }
+                th { border-bottom: 1px dashed #000; }
+                .total-section {
+                    font-weight: bold;
+                    font-size: 14px;
+                    text-align: left;
+                }
+                .footer { text-align: center; margin-top: 15px; font-size: 12px; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h2>نظام نقاط البيع</h2>
+                <p>فاتورة: #${currentOrderForPrint.id}</p>
+                <p>العميل: ${currentOrderForPrint.customer}</p>
+                <p>الكاشير: ${currentOrderForPrint.cashier}</p>
+                <p>التاريخ: ${currentOrderForPrint.date}</p>
+            </div>
+            <div class="divider"></div>
+            <table>
+                <thead>
+                <th style="width: 40%;">الصنف</th>
+				<th style="width: 15%; text-align:center;">الكمية</th>
+				<th style="width: 20%; text-align:center;">سعر الوحدة</th>
+				<th style="width: 25%;">الإجمالي</th>
+                </thead>
+                <tbody>
+                   ${currentItemsForPrint.map(item => `
+    <tr>
+        <td>${item.products?.name || 'محذوف'}</td>
+        <td style="text-align:center;">${item.quantity}</td>
+        <td style="text-align:center;">${formatCurrency(item.price_at_time)}</td>
+        <td>${formatCurrency(item.quantity * item.price_at_time)}</td>
+    </tr>
+`).join('')}
+                </tbody>
+            </table>
+            <div class="divider"></div>
+            <div class="total-section">
+                الإجمالي: ${formatCurrency(total)}
+            </div>
+            <div class="divider"></div>
+            <div class="footer">
+                <p>شكراً لزيارتكم!</p>
+            </div>
+        </body>
+        </html>
+    `;
+
+    // فتح نافذة الطباعة
+    const printWindow = window.open('', '_blank', 'width=400,height=600');
+    if (!printWindow) {
+        alert('يرجى السماح للنوافذ المنبثقة لطباعة الفاتورة');
+        return;
+    }
+
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.focus();
+
+    // طباعة وإغلاق النافذة بعد اكتمال الطباعة
+    setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+    }, 500);
+}
+
         fetchOrders();
     </script>
 </body>

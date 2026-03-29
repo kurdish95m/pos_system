@@ -3,335 +3,307 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<meta name="google" content="notranslate">
-    <title>إدارة المنتجات - Mobile POS</title>
- <link rel="stylesheet" href="css/style.css">
-	
-	<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#34495e">
+    <meta name="google" content="notranslate">
+    <title>إدارة المنتجات - Modern POS</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
-        /* إضافة ستايل بسيط للقائمة المنسدلة عشان تطابق تصميم مربعات النص */
-        .add-modal select {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            width: 100%;
-            box-sizing: border-box;
-            font-family: inherit;
-            background: white;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap');
+        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; padding-bottom: 90px; }
+        .product-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .product-card:hover { transform: translateY(-3px); shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
 <body>
-	<header style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #2c3e50; color: white; position: sticky; top: 0; z-index: 1000;">
-    <div style="display: flex; align-items: center; gap: 12px;">
-        <span onclick="toggleSidebar()" style="font-size: 24px; cursor: pointer; padding: 5px;">☰</span>
-        <h2 style="margin:0; font-size: 1.1rem;">📦 المخزون والمنتجات</h2>
-    </div>
-    <div id="header-actions">
-        <div id="user-greeting" style="font-size: 0.8rem; opacity: 0.8;"></div>
-    </div>
-</header>
 
-<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
-<div class="sidebar" id="sidebar">
-    <div class="sidebar-header" style="background: #34495e; padding: 30px 20px; color: white;">
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <div style="width: 50px; height: 50px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
-            <div>
-                <h3 id="side-user-name" style="margin:0; font-size: 16px;">إسماعيل</h3>
-                <span style="font-size: 12px; color: #2ecc71;">● مدير النظام</span>
+    <div id="sidebar-placeholder"></div>
+    <div id="nav-placeholder"></div>
+
+    <main class="max-w-5xl mx-auto p-4">
+        <div class="flex gap-3 mb-6 items-center bg-white p-3 rounded-2xl shadow-sm border border-gray-100 sticky top-20 z-40">
+            <div class="relative flex-1">
+                <i class="fas fa-barcode absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input type="text" id="search-product" placeholder="ابحث بالاسم أو امسح الباركود..." onkeyup="handleSearch()" 
+                    class="w-full pr-10 pl-4 py-2 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+            </div>
+            
+            <button onclick="openAddModal()" 
+                class="w-11 h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg shadow-blue-100 transition-all flex items-center justify-center shrink-0">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+
+        <div id="summary-box" class="mb-6 flex flex-wrap gap-2">
+            </div>
+
+        <div id="loading" class="flex flex-col items-center justify-center py-20 text-gray-400">
+            <div class="animate-spin text-3xl mb-4 text-blue-500"><i class="fas fa-spinner"></i></div>
+            <p>جاري مزامنة المنتجات...</p>
+        </div>
+
+        <div id="products-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            </div>
+    </main>
+
+    <div id="modal-overlay" class="fixed inset-0 bg-black/50 z-[1100] hidden backdrop-blur-sm transition-all" onclick="closeModal()"></div>
+    <div id="add-modal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-lg bg-white rounded-3xl shadow-2xl z-[1101] hidden flex flex-col overflow-hidden transform transition-all scale-95 opacity-0">
+        <div class="p-6 border-b border-gray-50">
+            <h3 id="modal-title" class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <i class="fas fa-box-open text-blue-500"></i> إضافة منتج جديد
+            </h3>
+        </div>
+        
+        <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+            <input type="hidden" id="edit-prod-id">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-gray-500 mb-1 mr-1">اسم المنتج</label>
+                    <input type="text" id="prod-name" placeholder="مثلاً: كوكا كولا 330 مل" 
+                        class="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1 mr-1">التصنيف</label>
+                    <select id="prod-category" class="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none appearance-none">
+                        <option value="">-- اختر التصنيف --</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1 mr-1">السعر (بيع)</label>
+                    <input type="number" id="prod-price" placeholder="0.00" 
+                        class="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1 mr-1">الباركود</label>
+                    <input type="text" id="prod-barcode" placeholder="امسح الباركود" 
+                        class="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1 mr-1">الكمية المتوفرة</label>
+                    <input type="number" id="prod-stock" value="0" 
+                        class="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-bold text-blue-600">
+                </div>
             </div>
         </div>
-    </div>
-    <div class="sidebar-links" style="padding: 15px 0;">
-        <div style="padding: 10px 25px; font-size: 11px; color: #95a5a6; font-weight: bold;">إدارة البيانات</div>
-        <a href="products.html" class="nav-link">📦 المنتجات</a>
-        <a href="categories.html" class="nav-link">🗂️ الأصناف</a>
-        <a href="customers.html" class="nav-link">👥 العملاء</a>
-        <a href="users.html" class="nav-link">👤 المستخدمين (الموظفين)</a>
-		<a href="settings.html" class="nav-link">⚙️ الإعدادات</a>
-        <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
-        <a href="#" onclick="logout()" class="nav-link" style="color: #e74c3c;">🚪 تسجيل الخروج</a>
-    </div>
-</div>
 
-<nav class="bottom-nav" style="position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; background: white; padding: 10px 0; border-top: 1px solid #eee; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000;">
-    <a href="products.html" class="b-nav-item active">📦<br>المنتجات</a>
-    <a href="pos.html" class="b-nav-item">📱<br>نقطة البيع</a>
-    <a href="orders.html" class="b-nav-item">🧾<br>الطلبات</a>
-    <a href="reports.html" class="b-nav-item">📊<br>التقارير</a>
-</nav>
-
-
-   <div class="controls-area" style="display: flex; gap: 10px; align-items: center; padding: 10px;">
-    <input type="text" id="search-product" placeholder="🔍 ابحث بالاسم أو امسح الباركود..." onkeyup="handleSearch()" style="flex: 1; margin: 0;">
-    
-    <button class="inline-add-btn" onclick="openAddModal()" style="
-            width: 40px; 
-        height: 40px;  
-        background: #3498db; 
-        color: white; 
-        border: none; 
-        border-radius: 8px; 
-        font-size: 24px; 
-        display: flex; 
-        align-items: center; 
-        justify-content: center; 
-        cursor: pointer;
-        flex-shrink: 0;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    ">+</button>
-</div>
-    
-    <div class="summary-box" id="summary-box">
-        إجمالي المنتجات المسجلة: 0
-    </div>
-
-    <div id="loading">جاري تحميل المنتجات...</div>
-    <div id="products-list" class="products-list"></div>
-	
-    <div class="modal-overlay" id="modal-overlay" onclick="closeModal()"></div>
-    <div class="add-modal" id="add-modal">
-        <h3 id="modal-title">إضافة منتج جديد</h3>
-        
-        <input type="hidden" id="edit-prod-id">
-        <input type="text" id="prod-name" placeholder="اسم المنتج (مطلوب)">
-        
-        <select id="prod-category">
-            <option value="">-- اختر التصنيف --</option>
-        </select>
-
-        <input type="number" id="prod-price" placeholder="السعر (مطلوب)">
-        <input type="text" id="prod-barcode" placeholder="الباركود">
-        <input type="number" id="prod-stock" placeholder="الكمية في المخزن" value="0">
-        
-        <div class="modal-btns">
-            <button class="save-btn" onclick="saveProduct()">حفظ</button>
-            <button class="cancel-btn" onclick="closeModal()">إلغاء</button>
+        <div class="p-6 bg-gray-50 flex gap-3">
+            <button onclick="saveProduct()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-100">
+                <i class="fas fa-check-circle ml-1"></i> حفظ المنتج
+            </button>
+            <button onclick="closeModal()" class="px-6 bg-white border border-gray-200 text-gray-500 py-3 rounded-xl font-bold hover:bg-gray-100 transition-all">
+                إلغاء
+            </button>
         </div>
     </div>
 
-    <script src="js/utils.js"></script>
-	  <script src="js/auth.js"></script>
-	    <script src="js/alert.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="js/supabase-config.js"></script>
-     <script src="js/UserManager.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/UserManager.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/Navigation.js"></script>
     <script>
-	   const userManager = new UserManager();
-        let allProducts = []; 
-        let allCategories = []; // لحفظ التصنيفات
+        const userManager = new UserManager();
+        let allProducts = [];
+        let allCategories = [];
 
-        // 1. التهيئة (جلب التصنيفات ثم المنتجات)
         async function initPage() {
             await fetchCategories();
             await fetchInventory();
-			// بعد إضافة العناصر للـ DOM
-          applyRoleBasedVisibility();
         }
 
-        // 2. جلب التصنيفات لتعبئة القائمة المنسدلة
         async function fetchCategories() {
-            const { data: categories, error } = await supabaseClient.from('categories').select('*');
+            const { data, error } = await supabaseClient.from('categories').select('*');
             if (error) return;
-            
-            allCategories = categories;
+            allCategories = data;
             const select = document.getElementById('prod-category');
-            
-            categories.forEach(cat => {
+            data.forEach(cat => {
                 select.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
             });
         }
 
-        // 3. جلب المنتجات مع اسم التصنيف
         async function fetchInventory() {
-            // نستخدم select('* , categories(name)') عشان نجيب اسم التصنيف المرتبط بالمنتج
             const { data: products, error } = await supabaseClient
                 .from('products')
                 .select('*, categories(name)')
                 .order('name', { ascending: true });
 
-            const loadingDiv = document.getElementById('loading');
-
-            if (error) {
-                loadingDiv.innerText = "حدث خطأ في الاتصال بقاعدة البيانات.";
-                return;
+            if (error) { 
+                document.getElementById('loading').innerHTML = '<p class="text-red-500">حدث خطأ في جلب البيانات</p>'; 
+                return; 
             }
 
-            loadingDiv.style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
             allProducts = products;
             renderProducts(allProducts);
-            
-            document.getElementById('summary-box').innerText = `إجمالي المنتجات المسجلة: ${allProducts.length}`;
+            updateSummary(allProducts);
         }
 
-        // 4. رسم المنتجات في الشاشة
-        function renderProducts(productsToRender) {
+        function updateSummary(list) {
+            const lowStockCount = list.filter(p => p.stock_quantity <= 5).length;
+            document.getElementById('summary-box').innerHTML = `
+                <div class="bg-blue-50 border border-blue-100 text-blue-700 px-4 py-2 rounded-xl text-xs font-bold shadow-sm">
+                    📦 إجمالي المنتجات: ${list.length}
+                </div>
+                ${lowStockCount > 0 ? `
+                <div class="bg-red-50 border border-red-100 text-red-600 px-4 py-2 rounded-xl text-xs font-bold animate-pulse shadow-sm">
+                    ⚠️ نواقص المخزون: ${lowStockCount}
+                </div>` : ''}
+            `;
+        }
+
+        function renderProducts(list) {
             const listDiv = document.getElementById('products-list');
             listDiv.innerHTML = ''; 
 
-            if (productsToRender.length === 0) {
-                listDiv.innerHTML = '<p style="text-align:center; color:#7f8c8d;">لا توجد منتجات مطابقة.</p>';
+            if (list.length === 0) {
+                listDiv.innerHTML = '<div class="col-span-full text-center py-20 text-gray-400">لا توجد نتائج مطابقة</div>';
                 return;
             }
 
-            productsToRender.forEach(product => {
-                const item = document.createElement('div');
-                item.className = 'product-item';
-                const barcodeText = product.barcode ? `باركود: ${product.barcode}` : 'بدون باركود';
-                const categoryName = product.categories ? product.categories.name : 'غير مصنف';
-                
+            list.forEach(product => {
+                const stockColor = product.stock_quantity <= 5 ? 'text-red-500 bg-red-50' : 'text-green-600 bg-green-50';
                 const safeName = product.name.replace(/'/g, "\\'");
                 const safeBarcode = product.barcode ? product.barcode.replace(/'/g, "\\'") : '';
-                // إذا كان category_id غير موجود نرسل فراغ ''
-                const safeCatId = product.category_id ? product.category_id : '';
+                const safeCatId = product.category_id || '';
 
+                const item = document.createElement('div');
+                item.className = 'product-card bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3 relative overflow-hidden';
+                
                 item.innerHTML = `
-                    <div class="product-header">
-                        <div class="product-details">
-                            <h3>${product.name}</h3>
-                            <p>${barcodeText}</p>
-                            <p style="color:#3498db; font-size:11px;">📂 ${categoryName}</p>
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1 pr-1">
+                            <span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-tighter">
+                                ${product.categories?.name || 'غير مصنف'}
+                            </span>
+                            <h3 class="font-bold text-gray-800 text-sm mt-1 line-clamp-1">${product.name}</h3>
+                            <p class="text-[10px] text-gray-400 font-mono mt-0.5"># ${product.barcode || 'بدون باركود'}</p>
                         </div>
-                        <div class="product-price-stock">
-                            <span class="price">${formatCurrency(product.price)}</span>
-                            <span class="stock">الكمية: ${product.stock_quantity}</span>
+                        <div class="text-left shrink-0">
+                            <p class="text-lg font-black text-slate-800">${formatCurrency(product.price)}</p>
                         </div>
                     </div>
-                    <div class="product-actions">
-                        <button class="action-btn" title="تعديل" onclick="openEditModal(${product.id}, '${safeName}', ${product.price}, '${safeBarcode}', ${product.stock_quantity}, '${safeCatId}')">✏️</button>
-                        <button class="action-btn" title="حذف" onclick="deleteProduct(${product.id}, '${safeName}')">🗑️</button>
+
+                    <div class="flex items-center justify-between mt-auto pt-3 border-t border-gray-50">
+                        <div class="px-3 py-1 rounded-lg text-[11px] font-bold ${stockColor}">
+                            الكمية: ${product.stock_quantity}
+                        </div>
+                        <div class="flex gap-1">
+                            <button onclick="openEditModal(${product.id}, '${safeName}', ${product.price}, '${safeBarcode}', ${product.stock_quantity}, '${safeCatId}')" 
+                                class="w-8 h-8 rounded-lg bg-gray-50 text-orange-500 flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all">
+                                <i class="fas fa-edit text-xs"></i>
+                            </button>
+                            <button onclick="deleteProduct(${product.id}, '${safeName}')" 
+                                class="w-8 h-8 rounded-lg bg-gray-50 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
+                        </div>
                     </div>
                 `;
                 listDiv.appendChild(item);
             });
         }
 
-        // 5. البحث بالباركود أو الاسم
         function handleSearch() {
-            const searchTerm = document.getElementById('search-product').value.trim().toLowerCase();
-            
-            if (searchTerm === '') {
-                renderProducts(allProducts);
-                document.getElementById('summary-box').innerText = `إجمالي المنتجات المسجلة: ${allProducts.length}`;
-                return;
-            }
-
-            const filtered = allProducts.filter(p => 
-                p.name.toLowerCase().includes(searchTerm) || 
-                (p.barcode && p.barcode.includes(searchTerm))
-            );
-
+            const term = document.getElementById('search-product').value.toLowerCase().trim();
+            const filtered = allProducts.filter(p => p.name.toLowerCase().includes(term) || (p.barcode && p.barcode.includes(term)));
             renderProducts(filtered);
-            document.getElementById('summary-box').innerText = `نتيجة البحث: ${filtered.length} منتج`;
+            updateSummary(filtered);
         }
 
-        // 6. فتح نافذة الإضافة (فارغة)
+        function toggleModal(show) {
+            const modal = document.getElementById('add-modal');
+            const overlay = document.getElementById('modal-overlay');
+            if(show) {
+                overlay.classList.remove('hidden');
+                modal.classList.remove('hidden');
+                setTimeout(() => { modal.classList.add('scale-100', 'opacity-100'); }, 10);
+            } else {
+                modal.classList.remove('scale-100', 'opacity-100');
+                setTimeout(() => { overlay.classList.add('hidden'); modal.classList.add('hidden'); }, 200);
+            }
+        }
+
         function openAddModal() {
-            document.getElementById('modal-title').innerText = "إضافة منتج جديد";
+            document.getElementById('modal-title').innerHTML = '<i class="fas fa-plus-circle text-blue-500"></i> إضافة منتج جديد';
             document.getElementById('edit-prod-id').value = '';
             document.getElementById('prod-name').value = '';
             document.getElementById('prod-category').value = '';
             document.getElementById('prod-price').value = '';
             document.getElementById('prod-barcode').value = '';
             document.getElementById('prod-stock').value = '0';
-            
-            document.getElementById('modal-overlay').style.display = 'block';
-            document.getElementById('add-modal').style.display = 'flex';
+            toggleModal(true);
         }
 
-        // 7. فتح نافذة التعديل (معبأة بالبيانات)
-        function openEditModal(id, name, price, barcode, stock, categoryId) {
-            document.getElementById('modal-title').innerText = "تعديل بيانات المنتج";
+        function openEditModal(id, name, price, barcode, stock, catId) {
+            document.getElementById('modal-title').innerHTML = '<i class="fas fa-edit text-orange-500"></i> تعديل المنتج';
             document.getElementById('edit-prod-id').value = id;
             document.getElementById('prod-name').value = name;
-            document.getElementById('prod-category').value = categoryId;
+            document.getElementById('prod-category').value = catId;
             document.getElementById('prod-price').value = price;
             document.getElementById('prod-barcode').value = barcode;
             document.getElementById('prod-stock').value = stock;
-            
-            document.getElementById('modal-overlay').style.display = 'block';
-            document.getElementById('add-modal').style.display = 'flex';
+            toggleModal(true);
         }
 
-        function closeModal() {
-            document.getElementById('modal-overlay').style.display = 'none';
-            document.getElementById('add-modal').style.display = 'none';
-        }
+        function closeModal() { toggleModal(false); }
 
-        // 8. حفظ (إضافة جديد أو تعديل الحالي)
         async function saveProduct() {
             const id = document.getElementById('edit-prod-id').value;
-            const name = document.getElementById('prod-name').value;
-            const categoryId = document.getElementById('prod-category').value;
-            const price = document.getElementById('prod-price').value;
-            const barcode = document.getElementById('prod-barcode').value;
-            const stock = document.getElementById('prod-stock').value;
-
-            if (!name || !price) {
-                alert("الرجاء إدخال الاسم والسعر!");
-                return;
-            }
-
-            const productData = {
-                name: name,
-                price: parseFloat(price),
-                barcode: barcode || null,
-                stock_quantity: parseInt(stock),
-                // إذا اختار تصنيف نرسل الرقم، وإذا تركها فاضية نرسل null
-                category_id: categoryId ? parseInt(categoryId) : null 
+            const data = {
+                name: document.getElementById('prod-name').value.trim(),
+                price: parseFloat(document.getElementById('prod-price').value),
+                barcode: document.getElementById('prod-barcode').value.trim() || null,
+                stock_quantity: parseInt(document.getElementById('prod-stock').value),
+                category_id: document.getElementById('prod-category').value ? parseInt(document.getElementById('prod-category').value) : null
             };
 
-            let error;
-
-            if (id) {
-                // تحديث منتج موجود
-                const res = await supabaseClient.from('products').update(productData).eq('id', id);
-                error = res.error;
-            } else {
-                // إضافة منتج جديد
-                const res = await supabaseClient.from('products').insert([productData]);
-                error = res.error;
-            }
-
-            if (error) {
-                if (error.code === '23505') {
-                    alert("هذا الباركود مسجل مسبقاً لمنتج آخر!");
-                } else {
-                    alert("خطأ في الحفظ: " + error.message);
-                }
+            if (!data.name || isNaN(data.price)) {
+                Swal.fire('تنبيه', 'يرجى إكمال البيانات الأساسية (الاسم والسعر)', 'warning');
                 return;
             }
 
-            closeModal();
-            document.getElementById('search-product').value = ''; 
-            document.getElementById('loading').style.display = 'block';
-            fetchInventory(); // جلب البيانات المحدثة
+            let result;
+            if (id) result = await supabaseClient.from('products').update(data).eq('id', id);
+            else result = await supabaseClient.from('products').insert([data]);
+
+            if (result.error) {
+                Swal.fire('خطأ', result.error.code === '23505' ? 'هذا الباركود مستخدم بالفعل' : 'حدث خطأ أثناء الحفظ', 'error');
+            } else {
+                closeModal();
+                fetchInventory();
+                Swal.fire({ icon: 'success', title: 'تم الحفظ بنجاح', showConfirmButton: false, timer: 1000 });
+            }
         }
 
         async function deleteProduct(id, name) {
-           // بدلاً من: if (!confirm(`هل أنت متأكد...`))
-if (!await confirm(`هل أنت متأكد من حذف المنتج "${name}" نهائياً؟`)) {
-    return;
-}
-            const { error } = await supabaseClient.from('products').delete().eq('id', id);
+            const { isConfirmed } = await Swal.fire({
+                title: 'حذف المنتج؟',
+                text: `سيتم حذف "${name}" نهائياً من النظام.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'نعم، حذف'
+            });
 
-            if (error) {
-                if (error.code === '23503') {
-                    alert("❌ لا يمكن حذف هذا المنتج لأنه مرتبط بفواتير مبيعات سابقة.\n\n💡 نصيحة: بدلاً من حذفه، قم بتعديله واجعل 'الكمية = 0'.");
+            if (isConfirmed) {
+                const { error } = await supabaseClient.from('products').delete().eq('id', id);
+                if (error) {
+                    Swal.fire('تعذر الحذف', 'المنتج مرتبط بعمليات سابقة، لا يمكن حذفه نهائياً.', 'error');
                 } else {
-                    alert("حدث خطأ أثناء الحذف: " + error.message);
+                    fetchInventory();
                 }
-                return;
             }
-
-            document.getElementById('search-product').value = ''; 
-            fetchInventory();
         }
 
-        // تشغيل البداية
         initPage();
     </script>
 </body>

@@ -3,129 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="google" content="notranslate">
-    <title>إدارة العملاء - Mobile POS</title>
-  <link rel="stylesheet" href="css/style.css">
-	
-	<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#34495e">
+    <meta name="google" content="notranslate">
+    <title>إدارة العملاء - Modern POS</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap');
+        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; padding-bottom: 80px; }
+        .customer-card { transition: all 0.3s ease; }
+        .customer-card:hover { transform: translateY(-2px); }
+        /* إخفاء السكرول بار لكشف الحساب */
+        #statement-body::-webkit-scrollbar { width: 4px; }
+        #statement-body::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+		
+		
+
+    </style>
 </head>
 <body>
-	<header style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #2c3e50; color: white; position: sticky; top: 0; z-index: 1000;">
-    <div style="display: flex; align-items: center; gap: 12px;">
-        <span onclick="toggleSidebar()" style="font-size: 24px; cursor: pointer; padding: 5px;">☰</span>
-        <h2 style="margin:0; font-size: 1.1rem;">👥 إدارة العملاء</h2>
-    </div>
-    <div id="header-actions">
-        <div id="user-greeting" style="font-size: 0.8rem; opacity: 0.8;"></div>
-    </div>
-</header>
 
-<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
-<div class="sidebar" id="sidebar">
-    <div class="sidebar-header" style="background: #34495e; padding: 30px 20px; color: white;">
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <div style="width: 50px; height: 50px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
-            <div>
-                <h3 id="side-user-name" style="margin:0; font-size: 16px;">إسماعيل</h3>
-                <span style="font-size: 12px; color: #2ecc71;">● مدير النظام</span>
+    <div id="sidebar-placeholder"></div>
+    <div id="nav-placeholder"></div>
+
+    <main class="max-w-4xl mx-auto p-4">
+        <div class="flex gap-3 mb-6 items-center bg-white p-3 rounded-2xl shadow-sm border border-gray-100">
+            <div class="relative flex-1">
+                <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input type="text" id="search-customer" placeholder="ابحث باسم العميل أو رقم الهاتف..." onkeyup="handleSearch()" 
+                    class="w-full pr-10 pl-4 py-2 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+            </div>
+            
+            <button onclick="openModal()" 
+                class="w-11 h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg shadow-blue-200 transition-all flex items-center justify-center shrink-0">
+                <i class="fas fa-user-plus"></i>
+            </button>
+        </div>
+
+        <div id="summary-box" class="mb-6 flex gap-2">
+            </div>
+
+        <div id="loading" class="flex flex-col items-center justify-center py-20 text-gray-400">
+            <div class="animate-spin text-3xl mb-4"><i class="fas fa-circle-notch"></i></div>
+            <p>جاري تحميل بيانات العملاء...</p>
+        </div>
+
+        <div id="customers-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            </div>
+    </main>
+
+    <div id="modal-overlay" class="fixed inset-0 bg-black/50 z-[1100] hidden backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
+    <div id="add-modal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-white rounded-3xl shadow-2xl z-[1101] hidden flex flex-col overflow-hidden transform transition-all scale-95 opacity-0">
+        <div class="p-6">
+            <h3 id="modal-title" class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <i class="fas fa-user-circle text-blue-500"></i> إضافة عميل جديد
+            </h3>
+            
+            <input type="hidden" id="edit-customer-id">
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1 mr-1">اسم العميل</label>
+                    <input type="text" id="customer-name" placeholder="الاسم الكامل" 
+                        class="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1 mr-1">رقم الهاتف</label>
+                    <input type="tel" id="customer-phone" placeholder="05xxxxxxxx" 
+                        class="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-left" dir="ltr">
+                </div>
+            </div>
+
+            <div class="flex gap-3 mt-8">
+                <button onclick="saveCustomer()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-100">
+                    حفظ البيانات
+                </button>
+                <button onclick="closeModal()" class="px-6 bg-gray-100 hover:bg-gray-200 text-gray-600 py-3 rounded-xl font-bold transition-all">
+                    إلغاء
+                </button>
             </div>
         </div>
     </div>
-    <div class="sidebar-links" style="padding: 15px 0;">
-        <div style="padding: 10px 25px; font-size: 11px; color: #95a5a6; font-weight: bold;">إدارة البيانات</div>
-        <a href="products.html" class="nav-link">📦 المنتجات</a>
-        <a href="categories.html" class="nav-link">🗂️ الأصناف</a>
-        <a href="customers.html" class="nav-link">👥 العملاء</a>
-        <a href="users.html" class="nav-link">👤 المستخدمين (الموظفين)</a>
-		<a href="settings.html" class="nav-link">⚙️ الإعدادات</a>
-        <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
-        <a href="#" onclick="logout()" class="nav-link" style="color: #e74c3c;">🚪 تسجيل الخروج</a>
-    </div>
-</div>
 
-<nav class="bottom-nav" style="position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; background: white; padding: 10px 0; border-top: 1px solid #eee; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000;">
-    <a href="customers.html" class="b-nav-item active">👥<br>العملاء</a>
-    <a href="pos.html" class="b-nav-item">📱<br>نقطة البيع</a>
-    <a href="orders.html" class="b-nav-item">🧾<br>الطلبات</a>
-    <a href="reports.html" class="b-nav-item">📊<br>التقارير</a>
-</nav>
-
-
-	  <div class="controls-area" style="display: flex; gap: 10px; align-items: center; padding: 10px;">
-    <input type="text" id="search-customer" placeholder="🔍 ابحث باسم العميل أو رقم الهاتف..."  onkeyup="handleSearch()" style="flex: 1; margin: 0;">
-    
-    <button class="inline-add-btn" onclick="openModal()" style="
-        width: 40px; 
-        height: 40px; 
-        background: #3498db; 
-        color: white; 
-        border: none; 
-        border-radius: 8px; 
-        font-size: 24px; 
-        display: flex; 
-        align-items: center; 
-        justify-content: center; 
-        cursor: pointer;
-        flex-shrink: 0;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    ">+</button>
-</div>
-
-    <div class="summary-box" id="summary-box">
-        <span>العملاء: 0</span>
-        <span>النقاط: 0</span>
-    </div>
-
-    <div id="loading">جاري تحميل بيانات العملاء...</div>
-    <div id="customers-list" class="customers-list"></div>
-
-
-    <!-- تم حذف شريط التنقل السفلي المكرر -->
-
-    <div class="modal-overlay" id="modal-overlay" onclick="closeModal()"></div>
-    <div class="add-modal" id="add-modal">
-        <h3 id="modal-title">إضافة عميل جديد</h3>
-        <input type="hidden" id="edit-customer-id">
-        <input type="text" id="customer-name" placeholder="اسم العميل (مطلوب)">
-        <input type="tel" id="customer-phone" placeholder="رقم الهاتف">
-        <div class="modal-btns">
-            <button class="save-btn" onclick="saveCustomer()">حفظ</button>
-            <button class="cancel-btn" onclick="closeModal()">إلغاء</button>
+    <div id="statement-modal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-lg bg-white rounded-3xl shadow-2xl z-[1201] hidden flex flex-col max-h-[85vh] overflow-hidden transform transition-all scale-95 opacity-0">
+        <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <h3 class="font-bold text-gray-800 flex items-center gap-2">
+                <i class="fas fa-file-invoice text-blue-500"></i> كشف حساب العميل
+            </h3>
+            <button onclick="closeStatementModal()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-400">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
+        <div id="statement-body" class="p-5 overflow-y-auto flex-1 bg-white">
+            </div>
     </div>
-
-    <div class="statement-modal" id="statement-modal">
-        <div class="statement-header">
-            <h3>كشف حساب عميل</h3>
-            <button class="close-btn" onclick="closeStatementModal()">✖</button>
-        </div>
-        <div class="statement-body" id="statement-body"></div>
-    </div>
-
-    <script src="js/auth.js"></script>
-	  <script src="js/utils.js"></script>
-	<script src="js/alert.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/utils.js"></script>
+
     <script src="js/UserManager.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/Navigation.js"></script>
+
     <script>
         const userManager = new UserManager();
-		
-        let allCustomers = []; // حفظ العملاء للبحث
+        let allCustomers = [];
 
-        // 1. تحديث أرقام الملخص
-        function updateSummary(customersArray) {
-            const totalCustomers = customersArray.length;
-            const totalPoints = customersArray.reduce((sum, c) => sum + (c.points || 0), 0);
-            document.getElementById('summary-box').innerHTML = `
-                <span>👥 العملاء: ${totalCustomers}</span>
-                <span>⭐ النقاط: ${totalPoints}</span>
-            `;
-        }
-
-        // 2. جلب العملاء
         async function fetchCustomers() {
             const { data: customers, error } = await supabaseClient
                 .from('customers')
@@ -133,165 +120,160 @@
                 .order('created_at', { ascending: false });
 
             const loadingDiv = document.getElementById('loading');
-            if (error) { loadingDiv.innerText = "حدث خطأ في جلب بيانات العملاء."; return; }
+            if (error) { 
+                loadingDiv.innerHTML = `<p class="text-red-500">خطأ في تحميل البيانات</p>`; 
+                return; 
+            }
             
             loadingDiv.style.display = 'none';
-            allCustomers = customers; // حفظ الداتا في المصفوفة (خطوة مهمة جداً للبحث)
-            
+            allCustomers = customers;
             updateSummary(allCustomers);
             renderCustomers(allCustomers);
         }
 
-        // 3. رسم قائمة العملاء
-        function renderCustomers(customersToRender) {
+        function updateSummary(list) {
+            const totalPoints = list.reduce((sum, c) => sum + (c.points || 0), 0);
+            document.getElementById('summary-box').innerHTML = `
+                <div class="bg-blue-50 border border-blue-100 text-blue-700 px-4 py-2 rounded-xl text-xs font-bold">
+                    <i class="fas fa-users ml-1"></i> العملاء: ${list.length}
+                </div>
+                <div class="bg-amber-50 border border-amber-100 text-amber-700 px-4 py-2 rounded-xl text-xs font-bold">
+                    <i class="fas fa-star ml-1"></i> إجمالي النقاط: ${totalPoints}
+                </div>
+            `;
+        }
+
+        function renderCustomers(list) {
             const listDiv = document.getElementById('customers-list');
             listDiv.innerHTML = ''; 
 
-            if(customersToRender.length === 0) { 
-                listDiv.innerHTML = '<p style="text-align:center; color:#7f8c8d;">لا يوجد عملاء مطابقين للبحث.</p>'; 
+            if(list.length === 0) { 
+                listDiv.innerHTML = `<div class="col-span-full text-center py-10 text-gray-400"><i class="fas fa-search-minus text-4xl mb-2"></i><p>لا توجد نتائج</p></div>`;
                 return; 
             }
 
-            customersToRender.forEach(customer => {
+            list.forEach(customer => {
                 const item = document.createElement('div');
-                item.className = 'customer-card';
-                const phoneText = customer.phone ? customer.phone : 'لا يوجد رقم';
+                item.className = 'customer-card bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col gap-4';
                 
-                // تنظيف النصوص من علامات التنصيص لتجنب أخطاء الجافاسكربت
                 const safeName = customer.name.replace(/'/g, "\\'");
                 const safePhone = customer.phone ? String(customer.phone).replace(/'/g, "\\'") : '';
 
                 item.innerHTML = `
-                    <div class="customer-header">
-                        <div class="customer-info">
-                            <h3>${customer.name}</h3>
-                            <p>📞 ${phoneText}</p>
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl shadow-inner font-bold">
+                                ${customer.name.charAt(0)}
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">${customer.name}</h3>
+                                <p class="text-xs text-gray-400"><i class="fas fa-phone-alt text-[10px] ml-1"></i> ${customer.phone || 'بدون رقم'}</p>
+                            </div>
                         </div>
-                        <div class="customer-points">⭐ ${customer.points || 0} نقطة</div>
+                        <div class="bg-amber-100 text-amber-700 px-3 py-1 rounded-lg text-xs font-bold">
+                            ⭐ ${customer.points || 0}
+                        </div>
                     </div>
-                    <div class="customer-actions">
-                        <button class="statement-btn" onclick="viewStatement(${customer.id}, '${safeName}')">🧾 كشف حساب</button>
-                        <div class="action-icons">
-                            <button class="action-btn" title="تعديل" onclick="openEditModal(${customer.id}, '${safeName}', '${safePhone}')">✏️</button>
-                            <button class="action-btn" title="حذف" onclick="deleteCustomer(${customer.id}, '${safeName}')">🗑️</button>
-                        </div>
+                    
+                    <div class="flex gap-2 border-t border-gray-50 pt-3">
+                        <button onclick="viewStatement(${customer.id}, '${safeName}')" 
+                            class="flex-1 bg-gray-50 hover:bg-blue-50 text-gray-600 hover:text-blue-600 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2">
+                            <i class="fas fa-file-alt"></i> كشف حساب
+                        </button>
+                        <button onclick="openEditModal(${customer.id}, '${safeName}', '${safePhone}')" 
+                            class="w-10 h-10 flex items-center justify-center rounded-lg bg-orange-50 text-orange-500 hover:bg-orange-500 hover:text-white transition-all">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteCustomer(${customer.id}, '${safeName}')" 
+                            class="w-10 h-10 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
                     </div>
                 `;
                 listDiv.appendChild(item);
             });
         }
 
-// دالة جديدة لتنظيف وتوحيد الحروف العربية (إلغاء الهمزات والتشكيل)
-        function normalizeArabic(text) {
-            if (!text) return '';
-            return String(text)
-                .replace(/[أإآا]/g, 'ا') // توحيد الألف
-                .replace(/ة/g, 'ه')      // توحيد التاء المربوطة
-                .replace(/ى/g, 'ي')      // توحيد الألف المقصورة
-                .toLowerCase();
-        }
-
-        // دالة البحث المحدثة
-        function handleSearch() {
-            const searchInput = document.getElementById('search-customer');
-            if (!searchInput) return;
-
-            // نأخذ الكلمة المكتوبة وننظفها من الهمزات
-            const rawSearchTerm = searchInput.value.trim();
-            const searchTerm = normalizeArabic(rawSearchTerm);
-            
-            if (rawSearchTerm === '') {
-                updateSummary(allCustomers);
-                renderCustomers(allCustomers);
-                return;
+        // نفس الدوال السابقة مع تحسين الأنيميشن
+        function toggleModal(id, show) {
+            const modal = document.getElementById(id);
+            const overlay = document.getElementById('modal-overlay');
+            if (show) {
+                overlay.classList.remove('hidden');
+                modal.classList.remove('hidden');
+                setTimeout(() => { modal.classList.add('scale-100', 'opacity-100'); modal.classList.remove('scale-95', 'opacity-0'); }, 10);
+            } else {
+                modal.classList.add('scale-95', 'opacity-0');
+                modal.classList.remove('scale-100', 'opacity-100');
+                setTimeout(() => { overlay.classList.add('hidden'); modal.classList.add('hidden'); }, 300);
             }
-
-            const filtered = allCustomers.filter(c => {
-                // ننظف اسم العميل من قاعدة البيانات قبل المقارنة
-                const normalizedName = normalizeArabic(c.name);
-                const phoneMatch = c.phone && String(c.phone).includes(rawSearchTerm);
-
-                // نبحث هل الاسم المنظف يحتوي على كلمة البحث المنظفة؟
-                return normalizedName.includes(searchTerm) || phoneMatch;
-            });
-            
-            updateSummary(filtered);
-            renderCustomers(filtered);
         }
 
-        // 5. النوافذ المنبثقة (إضافة وتعديل)
-        function openModal() { 
-            document.getElementById('modal-title').innerText = "إضافة عميل جديد";
+        function openModal() {
+            document.getElementById('modal-title').innerHTML = '<i class="fas fa-user-plus text-blue-500"></i> إضافة عميل جديد';
             document.getElementById('edit-customer-id').value = '';
             document.getElementById('customer-name').value = ''; 
             document.getElementById('customer-phone').value = ''; 
-            document.getElementById('modal-overlay').style.display = 'block'; 
-            document.getElementById('add-modal').style.display = 'flex'; 
+            toggleModal('add-modal', true);
         }
 
         function openEditModal(id, name, phone) {
-            document.getElementById('modal-title').innerText = "تعديل بيانات العميل";
+            document.getElementById('modal-title').innerHTML = '<i class="fas fa-user-edit text-orange-500"></i> تعديل بيانات العميل';
             document.getElementById('edit-customer-id').value = id;
             document.getElementById('customer-name').value = name; 
             document.getElementById('customer-phone').value = phone; 
-            document.getElementById('modal-overlay').style.display = 'block'; 
-            document.getElementById('add-modal').style.display = 'flex'; 
+            toggleModal('add-modal', true);
         }
 
-        function closeModal() { 
-            document.getElementById('modal-overlay').style.display = 'none'; 
-            document.getElementById('add-modal').style.display = 'none'; 
-        }
+        function closeModal() { toggleModal('add-modal', false); toggleModal('statement-modal', false); }
 
-        // 6. حفظ البيانات
         async function saveCustomer() {
             const id = document.getElementById('edit-customer-id').value;
-            const nameInput = document.getElementById('customer-name').value;
-            const phoneInput = document.getElementById('customer-phone').value;
+            const name = document.getElementById('customer-name').value.trim();
+            const phone = document.getElementById('customer-phone').value.trim();
 
-            if (!nameInput) { alert("الرجاء إدخال اسم العميل!"); return; }
+            if (!name) { Swal.fire('خطأ', 'يرجى إدخال اسم العميل', 'error'); return; }
 
-            let error;
+            const customerData = { name, phone: phone || null };
+            let result;
 
             if (id) {
-                const res = await supabaseClient.from('customers').update({ name: nameInput, phone: phoneInput }).eq('id', id);
-                error = res.error;
+                result = await supabaseClient.from('customers').update(customerData).eq('id', id);
             } else {
-                const res = await supabaseClient.from('customers').insert([{ name: nameInput, phone: phoneInput }]);
-                error = res.error;
+                result = await supabaseClient.from('customers').insert([customerData]);
             }
 
-            if (error) {
-                if(error.code === '23505') alert("رقم الهاتف مسجل مسبقاً لعميل آخر!");
-                else alert("حدث خطأ أثناء الحفظ.");
-                return;
+            if (result.error) {
+                Swal.fire('خطأ', result.error.code === '23505' ? 'رقم الهاتف مسجل مسبقاً' : 'حدث خطأ أثناء الحفظ', 'error');
+            } else {
+                closeModal();
+                fetchCustomers();
+                Swal.fire({ icon: 'success', title: 'تم الحفظ بنجاح', showConfirmButton: false, timer: 1500 });
             }
-
-            closeModal();
-            document.getElementById('search-customer').value = ''; 
-            document.getElementById('loading').style.display = 'block';
-            fetchCustomers();
         }
 
-        // 7. حذف عميل
         async function deleteCustomer(id, name) {
-         // بدلاً من: if (!confirm(`هل أنت متأكد...`))
-if (!await confirm(`هل أنت متأكد من حذف العميل "${name}"؟\nملاحظة: فواتيره السابقة ستبقى مسجلة كـ "زبون نقدي".`)) {
-    return;
-}
-            const { error } = await supabaseClient.from('customers').delete().eq('id', id);
-            if (error) { alert("حدث خطأ أثناء الحذف!"); return; }
-            
-            document.getElementById('search-customer').value = '';
-            fetchCustomers();
+            const { isConfirmed } = await Swal.fire({
+                title: 'حذف العميل؟',
+                text: `سيتم حذف "${name}"، وستبقى فواتيره مسجلة كزبون نقدي.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'نعم، احذف',
+                cancelButtonText: 'إلغاء',
+                confirmButtonColor: '#ef4444'
+            });
+
+            if (isConfirmed) {
+                const { error } = await supabaseClient.from('customers').delete().eq('id', id);
+                if (error) Swal.fire('خطأ', 'تعذر حذف العميل', 'error');
+                else fetchCustomers();
+            }
         }
 
-        // 8. كشف الحساب
         async function viewStatement(customerId, customerName) {
-            document.getElementById('modal-overlay').style.display = 'block';
-            document.getElementById('statement-modal').style.display = 'flex';
+            toggleModal('statement-modal', true);
             const body = document.getElementById('statement-body');
-            body.innerHTML = '<div style="text-align:center; padding: 20px;">جاري جلب الفواتير...</div>';
+            body.innerHTML = '<div class="flex justify-center py-10 animate-pulse text-gray-400">جاري جلب الفواتير...</div>';
 
             const { data: orders, error } = await supabaseClient
                 .from('orders')
@@ -299,37 +281,51 @@ if (!await confirm(`هل أنت متأكد من حذف العميل "${name}"؟\
                 .eq('customer_id', customerId)
                 .order('created_at', { ascending: false });
 
-            if (error) { body.innerHTML = '<div style="color:red; text-align:center;">حدث خطأ في جلب السجل.</div>'; return; }
-            if (orders.length === 0) { body.innerHTML = `<p style="text-align:center; margin-top: 20px;">لا توجد فواتير مسجلة للعميل <strong>${customerName}</strong>.</p>`; return; }
+            if (error || orders.length === 0) {
+                body.innerHTML = `<div class="text-center py-10 text-gray-400">لا توجد فواتير مسجلة لهذا العميل</div>`;
+                return;
+            }
 
-            let totalSpent = 0;
-            let ordersHtml = orders.map(order => {
-                totalSpent += parseFloat(order.total_amount);
-                const date = new Date(order.created_at).toLocaleString('ar-EG');
-                return `
-                    <div class="statement-order">
+            let totalSpent = orders.reduce((s, o) => s + parseFloat(o.total_amount), 0);
+            
+            let html = `
+                <div class="bg-slate-900 text-white p-5 rounded-2xl mb-6 shadow-lg shadow-slate-200">
+                    <p class="text-slate-400 text-xs mb-1">إجمالي مشتريات العميل</p>
+                    <div class="text-2xl font-bold">${formatCurrency(totalSpent.toFixed(2))}</div>
+                    <div class="text-[10px] text-slate-400 mt-2 italic">عدد الفواتير: ${orders.length}</div>
+                </div>
+                <div class="space-y-3">
+            `;
+
+            orders.forEach(order => {
+                const date = new Date(order.created_at).toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short' });
+                html += `
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-xl border border-gray-100">
                         <div>
-                            <strong>رقم #${order.id}</strong><br>
-                            <small style="color:#7f8c8d;">${date}</small>
+                            <div class="text-sm font-bold text-gray-800">فاتورة #${order.id}</div>
+                            <div class="text-[10px] text-gray-400">${date}</div>
                         </div>
-                        <div style="color:#27ae60; font-weight:bold;">${formatCurrency(order.total_amount.toFixed(1))}</div>
+                        <div class="text-sm font-bold text-blue-600">${formatCurrency(order.total_amount.toFixed(2))}</div>
                     </div>
                 `;
-            }).join('');
+            });
 
-            body.innerHTML = `
-                <div style="background:#f4f6f8; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center;">
-                    <p style="margin:0 0 5px 0;">إجمالي مشتريات <strong>${customerName}</strong></p>
-                    <h2 style="margin:0; color:#2c3e50;">${formatCurrency(totalSpent.toFixed(1))}</h2>
-                    <p style="margin:5px 0 0 0; font-size:12px; color:#7f8c8d;">عدد الفواتير: ${orders.length}</p>
-                </div>
-                ${ordersHtml}
-            `;
+            html += `</div>`;
+            body.innerHTML = html;
         }
 
-        function closeStatementModal() {
-            document.getElementById('modal-overlay').style.display = 'none';
-            document.getElementById('statement-modal').style.display = 'none';
+        function closeStatementModal() { toggleModal('statement-modal', false); }
+
+        function normalizeArabic(text) {
+            if (!text) return '';
+            return String(text).replace(/[أإآا]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').toLowerCase();
+        }
+
+        function handleSearch() {
+            const term = normalizeArabic(document.getElementById('search-customer').value.trim());
+            const filtered = allCustomers.filter(c => normalizeArabic(c.name).includes(term) || (c.phone && c.phone.includes(term)));
+            renderCustomers(filtered);
+            updateSummary(filtered);
         }
 
         fetchCustomers();

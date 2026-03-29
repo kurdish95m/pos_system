@@ -4,228 +4,704 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2563eb">
     <title>تقارير المبيعات - Mobile POS</title>
     
- <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-
-		<header style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #2c3e50; color: white; position: sticky; top: 0; z-index: 1000;">
-    <div style="display: flex; align-items: center; gap: 12px;">
-        <span onclick="toggleSidebar()" style="font-size: 24px; cursor: pointer; padding: 5px;">☰</span>
-        <h2 style="margin:0; font-size: 1.1rem;">📈 تقارير الجرد والمبيعات</h2>
-    </div>
-    <div id="header-actions">
-        <div id="user-greeting" style="font-size: 0.8rem; opacity: 0.8;"></div>
-    </div>
-</header>
-	<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
-<div class="sidebar" id="sidebar">
-    <div class="sidebar-header" style="background: #34495e; padding: 30px 20px; color: white;">
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <div style="width: 50px; height: 50px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
-            <div>
-                <h3 id="side-user-name" style="margin:0; font-size: 16px;">إسماعيل</h3>
-                <span style="font-size: 12px; color: #2ecc71;">● مدير النظام</span>
-            </div>
-        </div>
-    </div>
-    <div class="sidebar-links" style="padding: 15px 0;">
-        <div style="padding: 10px 25px; font-size: 11px; color: #95a5a6; font-weight: bold;">إدارة البيانات</div>
-        <a href="products.html" class="nav-link">📦 المنتجات</a>
-        <a href="categories.html" class="nav-link">🗂️ الأصناف</a>
-        <a href="customers.html" class="nav-link">👥 العملاء</a>
-        <a href="users.html" class="nav-link">👤 المستخدمين (الموظفين)</a>
-		<a href="settings.html" class="nav-link">⚙️ الإعدادات</a>
-        <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
-        <a href="#" onclick="logout()" class="nav-link" style="color: #e74c3c;">🚪 تسجيل الخروج</a>
-    </div>
-</div>
-
-<nav class="bottom-nav" style="position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; background: white; padding: 10px 0; border-top: 1px solid #eee; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000;">
-    <a href="dashboard.html" class="b-nav-item">🏠<br>الرئيسية</a>
-    <a href="pos.html" class="b-nav-item">📱<br>نقطة البيع</a>
-    <a href="orders.html" class="b-nav-item">🧾<br>الطلبات</a>
-    <a href="reports.html" class="b-nav-item">📊<br>التقارير</a>
-</nav>
-
-    <div class="print-header" id="print-header">
-        <h1>تقرير المبيعات الشامل</h1>
-        <p id="print-date">التاريخ: </p>
-    </div>
-
-    <div class="filter-container">
-        <button class="filter-btn active" onclick="loadReport('today', this)">مبيعات اليوم</button>
-        <button class="filter-btn" onclick="loadReport('week', this)">هذا الأسبوع</button>
-        <button class="filter-btn" onclick="loadReport('month', this)">هذا الشهر</button>
-        <button class="filter-btn" onclick="loadReport('all', this)">كل الأوقات</button>
-    </div>
-
-
-    <div id="loading" style="text-align: center; padding: 20px;">جاري حساب البيانات...</div>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- خط Tajawal -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <div class="stats-grid" id="stats-grid" style="display: none;">
-        <div class="stat-box sales">
-            <h4>إجمالي الإيرادات</h4>
-            <div class="val" id="rep-total-sales">0.00</div>
-        </div>
-        <div class="stat-box">
-            <h4>عدد الفواتير</h4>
-            <div class="val" id="rep-orders-count">0</div>
-        </div>
-        <div class="stat-box">
-            <h4>عدد الزبائن</h4>
-            <div class="val" id="rep-customers-count">0</div>
-        </div>
-        <div class="stat-box">
-            <h4>المنتجات المباعة (قطع)</h4>
-            <div class="val" id="rep-items-count">0</div>
-        </div>
-    </div>
-
-    <div class="table-container" id="table-container" style="display: none;">
-        <table class="reports-table">
-            <thead>
-                <tr>
-                    <th style="width: 35%;">المنتج</th>
-                    <th style="width: 20%; text-align: center;">الكمية</th>
-					<th style="width: 20%; text-align: center;">السعر</th>
-                    <th style="width: 25%;">الإجمالي</th>
-                </tr>
-            </thead>
-            <tbody id="report-table-body"> </tbody>
-        </table>
-    </div>
-	
-    <div class="print-action">
-        <button class="btn-print-a4" onclick="window.print()">📄 حفظ كـ PDF (A4)</button>
-    </div>
-	
-    <script src="js/alert.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase-config.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/UserManager.js"></script> <!-- تمت الإضافة -->
-    <script>
-        // حماية الصفحة للمدير فقط
-        if (localStorage.getItem("user_role") !== "admin") {
-            alert("عذراً ✋، هذه الصفحة مخصصة لمدير النظام فقط.");
-            window.location.href = "pos.html";
+    <style>
+	      .bottom-nav-item:hover {
+            background: #e2e8f0;
         }
 
+        .bottom-nav-item.active {
+            background: #3b82f6;
+            color: white !important;
+        }
+        body { 
+            font-family: 'Tajawal', sans-serif;
+            background: #f3f4f6;
+        }
+        
+
+        /* تأثيرات زر التصفية النشط */
+        .filter-btn {
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        
+        .filter-btn.active {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+            color: white !important;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+            border-color: #1d4ed8;
+        }
+        
+        .filter-btn:not(.active):hover {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+        }
+        
+        /* بطاقات الإحصائيات */
+        .stat-card {
+            transition: all 0.3s ease;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-color: #2563eb;
+        }
+        
+        /* تحسينات الجدول */
+        #report-table-body tr {
+            transition: background-color 0.2s ease;
+        }
+        
+        #report-table-body tr:hover {
+            background-color: #f9fafb;
+        }
+        
+        /* تنسيق المودال */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal {
+            position: fixed;
+            top: -50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            z-index: 1001;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            text-align: center;
+            width: 90%;
+            max-width: 350px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        }
+        
+        .modal.open { top: 50%; }
+        
+        /* تحسينات الطباعة */
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; padding: 20px; }
+            .print-only { display: block !important; }
+            .stat-card { border: 1px solid #ddd; box-shadow: none; }
+            table { border: 1px solid #e5e7eb; width: 100%; }
+            th { background: #f3f4f6; }
+            
+            @page {
+                size: A4;
+                margin: 1cm;
+            }
+        }
+        
+        /* تجنب تغطية المحتوى بالقائمة السفلية */
+        main {
+            padding-bottom: 90px;
+        }
+        
+        /* مؤشر التحميل المحسن */
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #e5e7eb;
+            border-top-color: #2563eb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* رسالة عدم وجود بيانات */
+        .no-data-message {
+            background: linear-gradient(135deg, #f9fafb, #f3f4f6);
+            border: 2px dashed #d1d5db;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <div id="sidebar-placeholder"></div>
+    <div id="nav-placeholder"></div>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="max-w-7xl mx-auto p-4 md:p-6">
+        
+        <!-- رأس الصفحة مع ترحيب المستخدم -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 no-print">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-3">
+                    <span class="bg-blue-100 p-3 rounded-xl">
+                        <i class="fas fa-chart-bar text-blue-600 text-2xl"></i>
+                    </span>
+                    تقارير الأداء والمبيعات
+                </h1>
+                <p class="text-gray-500 mt-2 mr-14">
+                    <i class="fas fa-calendar-alt ml-1 text-blue-500"></i>
+                    <span id="current-date-display">تحليل الأداء حسب الفترة</span>
+                </p>
+            </div>
+            <!-- ترحيب المستخدم (سيتم تعبئته آلياً) -->
+            <div id="user-greeting-container"></div>
+        </div>
+
+        <!-- أزرار التصفية -->
+        <div class="bg-white p-2 rounded-2xl shadow-sm border border-gray-100 mb-8 inline-flex flex-wrap gap-2 no-print">
+            <button class="filter-btn active px-5 py-2.5 rounded-xl text-gray-600 font-medium transition flex items-center gap-2" onclick="loadReport('today', this)">
+                <i class="fas fa-sun text-yellow-500"></i>
+                اليوم
+            </button>
+            <button class="filter-btn px-5 py-2.5 rounded-xl text-gray-600 font-medium transition flex items-center gap-2" onclick="loadReport('week', this)">
+                <i class="fas fa-calendar-week text-green-500"></i>
+                الأسبوع
+            </button>
+            <button class="filter-btn px-5 py-2.5 rounded-xl text-gray-600 font-medium transition flex items-center gap-2" onclick="loadReport('month', this)">
+                <i class="fas fa-calendar-alt text-blue-500"></i>
+                الشهر
+            </button>
+            <button class="filter-btn px-5 py-2.5 rounded-xl text-gray-600 font-medium transition flex items-center gap-2" onclick="loadReport('all', this)">
+                <i class="fas fa-infinity text-purple-500"></i>
+                الكل
+            </button>
+        </div>
+
+        <!-- قسم الطباعة -->
+        <div class="hidden print-only text-center mb-8 pb-4 border-b-2 border-gray-300">
+            <div class="flex items-center justify-center gap-3 mb-3">
+                <span class="text-4xl">🏪</span>
+                <h1 class="text-3xl font-bold">نظام Mobile POS</h1>
+            </div>
+            <h2 class="text-xl font-bold text-gray-800">تقرير المبيعات</h2>
+            <p id="print-date" class="text-gray-600 mt-2"></p>
+            <p class="text-sm text-gray-500">تم التوليد بواسطة: <span id="print-username"></span></p>
+        </div>
+
+        <!-- مؤشر التحميل -->
+        <div id="loading" class="text-center py-20 no-print">
+            <div class="loading-spinner mx-auto mb-4"></div>
+            <p class="text-gray-500 text-lg">جاري تحليل البيانات واستخراج التقارير...</p>
+            <p class="text-sm text-gray-400 mt-2">قد يستغرق ذلك بضع ثواني</p>
+        </div>
+
+        <!-- بطاقات الإحصائيات -->
+        <div id="stats-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8 hidden">
+            <!-- إجمالي المبيعات -->
+            <div class="stat-card bg-white p-5 rounded-2xl shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="bg-green-100 p-2 rounded-lg">
+                        <i class="fas fa-money-bill-wave text-green-600 text-xl"></i>
+                    </div>
+                    <span class="text-xs text-gray-400">إجمالي الإيرادات</span>
+                </div>
+                <h3 class="text-2xl font-bold text-green-600" id="rep-total-sales">0.00</h3>
+                <p class="text-xs text-gray-500 mt-2">قيمة المبيعات الإجمالية</p>
+            </div>
+            
+            <!-- عدد العمليات -->
+            <div class="stat-card bg-white p-5 rounded-2xl shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="bg-blue-100 p-2 rounded-lg">
+                        <i class="fas fa-shopping-cart text-blue-600 text-xl"></i>
+                    </div>
+                    <span class="text-xs text-gray-400">عدد الفواتير</span>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800" id="rep-orders-count">0</h3>
+                <p class="text-xs text-gray-500 mt-2">إجمالي عمليات البيع</p>
+            </div>
+            
+            <!-- العملاء المميزين -->
+            <div class="stat-card bg-white p-5 rounded-2xl shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="bg-purple-100 p-2 rounded-lg">
+                        <i class="fas fa-users text-purple-600 text-xl"></i>
+                    </div>
+                    <span class="text-xs text-gray-400">العملاء</span>
+                </div>
+                <h3 class="text-2xl font-bold text-purple-600" id="rep-customers-count">0</h3>
+                <p class="text-xs text-gray-500 mt-2">عدد العملاء النشطين</p>
+            </div>
+            
+            <!-- القطع المباعة -->
+            <div class="stat-card bg-white p-5 rounded-2xl shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="bg-orange-100 p-2 rounded-lg">
+                        <i class="fas fa-boxes text-orange-600 text-xl"></i>
+                    </div>
+                    <span class="text-xs text-gray-400">القطع المباعة</span>
+                </div>
+                <h3 class="text-2xl font-bold text-orange-600" id="rep-items-count">0</h3>
+                <p class="text-xs text-gray-500 mt-2">إجمالي الكميات المباعة</p>
+            </div>
+        </div>
+
+        <!-- جدول المنتجات الأكثر مبيعاً -->
+        <div id="table-container" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hidden">
+            <div class="p-4 border-b bg-gradient-to-l from-gray-50 to-white">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                        <i class="fas fa-crown text-yellow-500"></i>
+                        ترتيب المنتجات الأكثر مبيعاً
+                    </h3>
+                    <span class="text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full">
+                        <i class="fas fa-chart-simple ml-1"></i>
+                        حسب الإيرادات
+                    </span>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-right border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-500 text-sm">
+                            <th class="px-6 py-4 font-semibold">
+                                <i class="fas fa-box ml-2 text-gray-400"></i>
+                                المنتج
+                            </th>
+                            <th class="px-6 py-4 font-semibold text-center">
+                                <i class="fas fa-hashtag ml-2 text-gray-400"></i>
+                                الكمية
+                            </th>
+                            <th class="px-6 py-4 font-semibold text-center">
+                                <i class="fas fa-tag ml-2 text-gray-400"></i>
+                                آخر سعر
+                            </th>
+                            <th class="px-6 py-4 font-semibold">
+                                <i class="fas fa-dollar-sign ml-2 text-gray-400"></i>
+                                الإيرادات
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-table-body" class="divide-y divide-gray-100">
+                        <!-- سيتم تعبئتها بالبيانات -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- ملخص الجدول (يظهر فقط عند وجود بيانات) -->
+            <div id="table-summary" class="p-4 bg-gray-50 border-t text-sm text-gray-500 hidden">
+                <div class="flex justify-between items-center">
+                    <span>إجمالي المنتجات المعروضة: <span id="products-count">0</span></span>
+                    <span>إجمالي الإيرادات: <span id="total-revenue" class="font-bold text-green-600">0</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- أزرار الإجراءات -->
+        <div class="mt-8 flex flex-wrap justify-center gap-4 no-print">
+            <button onclick="window.print()" 
+                    class="flex items-center gap-2 bg-gray-800 text-white px-8 py-3 rounded-xl hover:bg-black transition shadow-lg hover:shadow-xl">
+                <i class="fas fa-print"></i>
+                <span>طباعة التقرير</span>
+            </button>
+            
+            <button onclick="exportToExcel()" 
+                    class="flex items-center gap-2 bg-green-600 text-white px-8 py-3 rounded-xl hover:bg-green-700 transition shadow-lg hover:shadow-xl">
+                <i class="fas fa-file-excel"></i>
+                <span>تصدير Excel</span>
+            </button>
+            
+            <button onclick="refreshReport()" 
+                    class="flex items-center gap-2 bg-blue-600 text-white px-8 py-3 rounded-xl hover:bg-blue-700 transition shadow-lg hover:shadow-xl">
+                <i class="fas fa-sync-alt"></i>
+                <span>تحديث البيانات</span>
+            </button>
+        </div>
+    </main>
+
+    <!-- مودال عرض التفاصيل -->
+    <div id="details-modal-overlay" class="modal-overlay" onclick="closeDetailsModal()"></div>
+    <div id="details-modal" class="modal">
+        <div class="text-5xl mb-4">📊</div>
+        <h3 class="text-xl font-bold mb-2">تفاصيل المنتج</h3>
+        <div id="modal-content" class="text-right">
+            <!-- يتم تعبئتها ديناميكياً -->
+        </div>
+        <button onclick="closeDetailsModal()" 
+                class="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition w-full">
+            إغلاق
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+	  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/UserManager.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/Navigation.js"></script>
+
+    
+    <!-- نظام القوائم الموحد -->
+    <script>
+        // متغيرات عامة
+        let currentReportPeriod = 'today';
+        let reportData = null;
+        
+        // التحقق من تسجيل الدخول والصلاحيات
+        (function checkAuth() {
+            const userRole = localStorage.getItem('user_role');
+            const isLoggedIn = localStorage.getItem('login');
+            
+            if (!isLoggedIn) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            // إذا لم يكن مدير، عرض رسالة وتوجيه للصفحة الرئيسية
+            if (userRole !== 'admin') {
+                alert('⚠️ عذراً، هذه الصفحة مخصصة للمديرين فقط.');
+                window.location.href = 'pos.html';
+            }
+        })();
+
+        // تحميل نظام القوائم
+        async function loadNavigationSystem() {
+            try {
+                const response = await fetch('components/navigation.html');
+                const html = await response.text();
+                document.getElementById('navigation-container').innerHTML = html;
+                
+                const script = document.createElement('script');
+                script.src = 'js/Navigation.js';
+                document.body.appendChild(script);
+                
+                script.onload = () => {
+                    setTimeout(() => {
+                        const container = document.getElementById('user-greeting-container');
+                        if (container && window.Navigation) {
+                            container.innerHTML = Navigation.createUserGreeting();
+                        }
+                        // تحديث تاريخ الطباعة باسم المستخدم
+                        const username = localStorage.getItem('username') || 'مستخدم';
+                        document.getElementById('print-username').textContent = username;
+                    }, 100);
+                };
+            } catch (error) {
+                console.error('❌ فشل تحميل نظام القوائم:', error);
+            }
+        }
+
+        // تهيئة الصفحة
+        document.addEventListener('DOMContentLoaded', () => {
+            loadNavigationSystem();
+            loadReport('today', document.querySelector('.filter-btn'));
+        });
+
+        // دالة تحديث التاريخ المعروض
+        function updateCurrentDateLabel(period) {
+            const display = document.getElementById('current-date-display');
+            const labels = {
+                today: 'تقرير اليوم',
+                week: 'تقرير آخر 7 أيام',
+                month: 'تقرير هذا الشهر',
+                all: 'تقرير شامل (كل الفترات)'
+            };
+            display.textContent = labels[period] || labels.today;
+        }
+
+        // دالة تحميل التقرير
         async function loadReport(period, btnElement) {
-            // تحديث الأزرار
+            // تحديث الفترة الحالية
+            currentReportPeriod = period;
+            updateCurrentDateLabel(period);
+            
+            // تحديث واجهة الأزرار
             if(btnElement) {
                 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
                 btnElement.classList.add('active');
             }
 
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('stats-grid').style.display = 'none';
-            document.getElementById('table-container').style.display = 'none';
+            // تهيئة العناصر
+            const elements = {
+                loading: document.getElementById('loading'),
+                stats: document.getElementById('stats-grid'),
+                table: document.getElementById('table-container'),
+                tbody: document.getElementById('report-table-body'),
+                summary: document.getElementById('table-summary')
+            };
 
-            // 1. تحديد التواريخ بناءً على الفلتر
+            // إظهار التحميل وإخفاء النتائج
+            elements.loading.classList.remove('hidden');
+            elements.stats.classList.add('hidden');
+            elements.table.classList.add('hidden');
+            if (elements.summary) elements.summary.classList.add('hidden');
+
+            // حساب النطاق الزمني
             let startDate = new Date();
-            startDate.setHours(0, 0, 0, 0); // بداية اليوم كافتراضي
+            startDate.setHours(0, 0, 0, 0);
             let endDate = new Date();
             endDate.setHours(23, 59, 59, 999);
 
-            let periodText = "مبيعات اليوم";
+            let periodLabel = "اليوم";
 
             if (period === 'week') {
                 startDate.setDate(startDate.getDate() - 7);
-                periodText = "مبيعات آخر 7 أيام";
+                periodLabel = "آخر 7 أيام";
             } else if (period === 'month') {
-                startDate.setDate(1); // بداية الشهر الحالي
-                periodText = "مبيعات هذا الشهر";
+                startDate.setMonth(startDate.getMonth() - 1);
+                periodLabel = "آخر 30 يوم";
             } else if (period === 'all') {
-                startDate = new Date(2000, 0, 1); // تاريخ قديم جداً لجلب الكل
-                periodText = "المبيعات الإجمالية (كل الأوقات)";
+                startDate = new Date(2020, 0, 1); // من بداية 2020
+                periodLabel = "كل الفترات";
             }
 
-            document.getElementById('print-date').innerText = `نوع التقرير: ${periodText} | تاريخ الاستخراج: ${new Date().toLocaleDateString('ar-EG')}`;
-
-            // 2. جلب الفواتير مع تفاصيل المنتجات ضمن هذا التاريخ
-            const { data: orders, error } = await supabaseClient
-                .from('orders')
-                .select(`
-                    id, total_amount, customer_id, created_at,
-                    order_items ( quantity, price_at_time, products ( name ) )
-                `)
-                .gte('created_at', startDate.toISOString())
-                .lte('created_at', endDate.toISOString());
-
-            if (error) {
-                alert("حدث خطأ أثناء جلب التقارير.");
-                return;
+            // تحديث نص الطباعة
+            const printDate = document.getElementById('print-date');
+            if (printDate) {
+                printDate.innerText = `نوع التقرير: ${periodLabel} | تاريخ الاستخراج: ${new Date().toLocaleString('ar-EG')}`;
             }
 
-            // 3. تحليل وتجميع البيانات (Aggregation)
-            let totalSales = 0;
-            let totalOrders = orders.length;
-            let uniqueCustomers = new Set();
-            let totalItemsSold = 0;
-            let productSummary = {}; // كائن لجمع المنتجات المتشابهة
+            try {
+                // جلب البيانات من Supabase
+                const { data: orders, error } = await supabaseClient
+                    .from('orders')
+                    .select(`
+                        id, 
+                        total_amount, 
+                        customer_id, 
+                        created_at,
+                        order_items (
+                            quantity, 
+                            price_at_time, 
+                            products (
+                                name,
+                                id
+                            )
+                        )
+                    `)
+                    .gte('created_at', startDate.toISOString())
+                    .lte('created_at', endDate.toISOString())
+                    .order('created_at', { ascending: false });
 
-            orders.forEach(order => {
-                totalSales += parseFloat(order.total_amount);
-                if (order.customer_id) uniqueCustomers.add(order.customer_id);
+                if (error) throw error;
 
-                order.order_items.forEach(item => {
-                    totalItemsSold += item.quantity;
-                    let pName = item.products ? item.products.name : 'منتج محذوف';
-                    let itemTotalRevenue = item.quantity * item.price_at_time;
+                // حفظ البيانات
+                reportData = orders;
 
-                    // الجديد: حفظ سعر الوحدة (price)
-                    if (!productSummary[pName]) {
-                        productSummary[pName] = { qty: 0, revenue: 0, price: item.price_at_time };
+                // معالجة البيانات
+                let totals = { 
+                    sales: 0, 
+                    items: 0, 
+                    customers: new Set(),
+                    uniqueProducts: new Set()
+                };
+                
+                let productMap = {};
+
+                orders.forEach(order => {
+                    // إجمالي المبيعات
+                    totals.sales += parseFloat(order.total_amount || 0);
+                    
+                    // العملاء
+                    if (order.customer_id) {
+                        totals.customers.add(order.customer_id);
                     }
-                    productSummary[pName].qty += item.quantity;
-                    productSummary[pName].revenue += itemTotalRevenue;
-                    // تحديث السعر ليكون آخر سعر تم البيع به
-                    productSummary[pName].price = item.price_at_time; 
+
+                    // عناصر الطلب
+                    if (order.order_items && Array.isArray(order.order_items)) {
+                        order.order_items.forEach(item => {
+                            totals.items += item.quantity || 0;
+                            
+                            const productName = item.products?.name || 'منتج غير معروف';
+                            const productId = item.products?.id;
+                            
+                            if (productId) {
+                                totals.uniqueProducts.add(productId);
+                            }
+                            
+                            if (!productMap[productName]) {
+                                productMap[productName] = { 
+                                    qty: 0, 
+                                    rev: 0, 
+                                    lastPrice: item.price_at_time || 0,
+                                    count: 0
+                                };
+                            }
+                            
+                            productMap[productName].qty += item.quantity || 0;
+                            productMap[productName].rev += (item.quantity || 0) * (item.price_at_time || 0);
+                            productMap[productName].count++;
+                        });
+                    }
                 });
-            });
 
-            // 4. عرض ملخص الأرقام
-       // ابحث عن هذا السطر واستبدله
-              document.getElementById('rep-total-sales').innerText = formatCurrencyPrice(totalSales);
-            document.getElementById('rep-orders-count').innerText = totalOrders;
-            document.getElementById('rep-customers-count').innerText = uniqueCustomers.size;
-            document.getElementById('rep-items-count').innerText =  totalItemsSold;
 
-            // 5. عرض جدول المنتجات مرتباً من الأكثر مبيعاً للأقل
-            const tbody = document.getElementById('report-table-body');
-            tbody.innerHTML = '';
+				// تحديث الإحصائيات
+				document.getElementById('rep-total-sales').innerText = formatCurrencyPrice(totals.sales);
+				document.getElementById('rep-orders-count').innerText = formatNumber(orders.length);
+				document.getElementById('rep-customers-count').innerText = formatNumber(totals.customers.size);
+				document.getElementById('rep-items-count').innerText = formatNumber(totals.items);
 
-            let sortedProducts = Object.entries(productSummary).sort((a, b) => b[1].revenue - a[1].revenue);
+                // ملء الجدول
+                elements.tbody.innerHTML = '';
+                const sorted = Object.entries(productMap).sort((a, b) => b[1].rev - a[1].rev);
 
-            if (sortedProducts.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#7f8c8d;">لا توجد مبيعات في هذه الفترة.</td></tr>`;
-            } else {
-         sortedProducts.forEach(([name, data]) => {
-    tbody.innerHTML += `
-        <tr>
-            <td><strong>${name}</strong></td>
-            <td style="text-align: center; direction: ltr;">
-                <span style="font-size:14px; font-weight:bold; color:#2c3e50;">${data.qty}</span> 
-            </td>
-            <td style="text-align: center; direction: ltr;">
-                <small style="font-size:14px; font-weight:bold; color:#2c3e50;">${formatCurrency(data.price)}</small>
-            </td>
-            <td style="color:#27ae60; font-weight:bold;">${formatCurrency(data.revenue)}</td>
-        </tr>
-    `;
-});
+                if (sorted.length === 0) {
+                    elements.tbody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center py-16">
+                                <div class="no-data-message rounded-xl p-8 max-w-md mx-auto">
+                                    <span class="text-6xl block mb-4">📭</span>
+                                    <h3 class="text-xl font-bold text-gray-700 mb-2">لا توجد بيانات</h3>
+                                    <p class="text-gray-500">لا توجد مبيعات في هذه الفترة</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    document.getElementById('products-count').innerText = '0';
+                    document.getElementById('total-revenue').innerText = formatCurrencyPrice(0);
+                } else {
+                    sorted.forEach(([name, data], index) => {
+                        const rowClass = index === 0 ? 'bg-yellow-50' : '';
+                        const medal = index === 0 ? '🥇' : (index === 1 ? '🥈' : (index === 2 ? '🥉' : ''));
+                        
+               elements.tbody.innerHTML += `
+    <tr class="${rowClass} hover:bg-gray-50 transition cursor-pointer" onclick="showProductDetails('${name}', ${data.qty}, ${data.rev}, ${data.lastPrice})">
+        <td class="px-6 py-4">
+            <div class="flex items-center gap-2">
+                ${medal && `<span class="text-xl">${medal}</span>`}
+                <span class="font-medium text-gray-800">${name}</span>
+            </div>
+        </td>
+        <td class="px-6 py-4 text-center">
+            <span class="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm">
+                ${formatNumber(data.qty)}
+            </span>
+        </td>
+        <td class="px-6 py-4 text-center text-gray-500">
+            ${formatNumber(data.lastPrice)}
+        </td>
+        <td class="px-6 py-4">
+            <span class="font-bold text-green-600">
+                ${formatNumber(data.rev)}
+            </span>
+        </td>
+    </tr>
+`;
+                    });
+                    
+                    // تحديث الملخص
+                    document.getElementById('products-count').innerText = sorted.length;
+                    document.getElementById('total-revenue').innerText = formatCurrencyPrice(totals.sales);
+                    elements.summary.classList.remove('hidden');
+                }
+
+                // إظهار النتائج
+                elements.loading.classList.add('hidden');
+                elements.stats.classList.remove('hidden');
+                elements.table.classList.remove('hidden');
+
+            } catch (err) {
+                console.error("Report Error:", err);
+                elements.loading.innerHTML = `
+                    <div class="bg-red-50 text-red-600 p-8 rounded-2xl max-w-md mx-auto">
+                        <span class="text-5xl block mb-4">❌</span>
+                        <h3 class="text-xl font-bold mb-2">حدث خطأ</h3>
+                        <p>فشل في تحميل التقرير، تحقق من اتصالك بالإنترنت</p>
+                        <button onclick="loadReport('${period}', document.querySelector('.filter-btn.active'))" 
+                                class="mt-4 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                            <i class="fas fa-redo ml-2"></i>
+                            إعادة المحاولة
+                        </button>
+                    </div>
+                `;
             }
-
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('stats-grid').style.display = 'grid';
-            document.getElementById('table-container').style.display = 'block';
         }
-        // تشغيل التقرير الافتراضي (اليوم)
-        loadReport('today', null);
+
+function showProductDetails(name, qty, revenue, price) {
+    const modal = document.getElementById('details-modal');
+    const overlay = document.getElementById('details-modal-overlay');
+    const content = document.getElementById('modal-content');
+    
+    content.innerHTML = `
+        <div class="space-y-3">
+            <p><span class="font-bold text-gray-600">المنتج:</span> ${name}</p>
+            <p><span class="font-bold text-gray-600">الكمية المباعة:</span> ${formatNumber(qty)}</p>
+            <p><span class="font-bold text-gray-600">آخر سعر:</span> ${formatCurrencyPrice(price)}</p>
+            <p><span class="font-bold text-gray-600">إجمالي الإيرادات:</span> ${formatCurrencyPrice(revenue)}</p>
+            <p><span class="font-bold text-gray-600">متوسط السعر:</span> ${formatCurrencyPrice(revenue / qty)}</p>
+        </div>
+    `;
+    
+    overlay.style.display = 'block';
+    setTimeout(() => modal.classList.add('open'), 10);
+}
+
+        // دالة إغلاق المودال
+        function closeDetailsModal() {
+            const modal = document.getElementById('details-modal');
+            const overlay = document.getElementById('details-modal-overlay');
+            modal.classList.remove('open');
+            setTimeout(() => overlay.style.display = 'none', 200);
+        }
+
+        // دالة تصدير إلى Excel
+        function exportToExcel() {
+             if (!reportData || reportData.length === 0) {
+        Swal.fire('لا توجد بيانات', 'لا توجد بيانات للتصدير', 'info');
+        return;
+    }
+            
+            // تجهيز البيانات للتصدير
+            let csv = "المنتج,الكمية,آخر سعر,الإيرادات\n";
+            
+            document.querySelectorAll('#report-table-body tr').forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 4) {
+                    const product = cells[0].innerText.replace(/[🥇🥈🥉]/g, '').trim();
+                    const qty = cells[1].innerText.trim();
+                    const price = cells[2].innerText.trim();
+                    const revenue = cells[3].innerText.trim();
+                    csv += `"${product}",${qty},"${price}","${revenue}"\n`;
+                }
+            });
+            
+            // إنشاء ملف للتحميل
+            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `تقرير_المبيعات_${new Date().toISOString().slice(0,10)}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // دالة تحديث التقرير
+        function refreshReport() {
+            loadReport(currentReportPeriod, document.querySelector('.filter-btn.active'));
+        }
+        // إغلاق المودال عند الضغط على ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeDetailsModal();
+            }
+        });
     </script>
 </body>
 </html>
