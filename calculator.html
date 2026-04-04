@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+	    <meta name="google" content="notranslate">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>شاشة وزن الدجاج - حذف انتقائي</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: #eef2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .main-card {
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #1e3c5c;
+            color: white;
+            padding: 18px 24px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.6rem;
+        }
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            background: #f8fafc;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .stat-box {
+            flex: 1;
+            background: white;
+            border-radius: 20px;
+            padding: 10px 12px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #e2edf2;
+        }
+        .stat-box span:first-child {
+            font-size: 0.8rem;
+            color: #3b5c7a;
+            display: block;
+        }
+        .stat-box .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #1e4663;
+        }
+        .table-wrapper {
+            padding: 16px 24px;
+            overflow-x: auto;
+            max-height: 350px;
+            overflow-y: auto;
+            border-bottom: 1px solid #e9edf2;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px 6px;
+            text-align: center;
+            border-bottom: 1px solid #dee2e8;
+            vertical-align: middle;
+        }
+        th {
+            background-color: #f1f5f9;
+            color: #1e3a5f;
+            position: sticky;
+            top: 0;
+        }
+        input.weight-input {
+            width: 100px;
+            padding: 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            text-align: center;
+        }
+        .delete-btn {
+            background: #f8d7da;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 30px;
+            color: #b91c1c;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.1s;
+            font-size: 0.8rem;
+        }
+        .delete-btn:hover {
+            background: #f5c2c7;
+            transform: scale(0.97);
+        }
+        .calculator-section {
+            background: #fefcf5;
+            padding: 20px 24px 24px;
+            border-top: 2px dashed #f0dbc0;
+        }
+        .calc-title {
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #a5582c;
+        }
+        .calc-display {
+            background: #1e2a3a;
+            color: #f5f9ff;
+            font-size: 2rem;
+            font-weight: 500;
+            padding: 12px 18px;
+            border-radius: 28px;
+            text-align: left;
+            direction: ltr;
+            font-family: monospace;
+            margin-bottom: 18px;
+            min-height: 75px;
+        }
+        .calc-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .calc-btn {
+            background: white;
+            border: none;
+            padding: 14px 0;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 40px;
+            cursor: pointer;
+            border: 1px solid #e2dccd;
+        }
+        .calc-btn:active {
+            transform: scale(0.96);
+        }
+        .btn-clear {
+            background: #ffe6dd;
+            color: #c2410c;
+        }
+        .btn-add {
+            background: #2c6e9e;
+            color: white;
+            font-size: 1.2rem;
+            grid-column: span 3;
+            padding: 14px;
+            border-radius: 60px;
+        }
+        .sec-btn {
+            width: 100%;
+            background: #e9ecef;
+            border: none;
+            padding: 12px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+        .sec-btn.reset {
+            background: #f4d0c0;
+            color: #aa4e2c;
+        }
+        footer {
+            background: #f1f3f6;
+            text-align: center;
+            padding: 12px;
+            font-size: 0.7rem;
+        }
+        @media (max-width: 550px) {
+            .stat-value { font-size: 1.3rem; }
+            .calc-btn { font-size: 1.2rem; padding: 10px 0; }
+            input.weight-input { width: 70px; }
+            .delete-btn { padding: 4px 8px; font-size: 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="main-card">
+    <div class="header">
+        <h1>🐔 شاشة وزن الدجاج المجمد</h1>
+    </div>
+    <div class="stats">
+        <div class="stat-box"><span>📦 عدد الكراتين</span><div class="stat-value" id="cartonCount">0</div></div>
+        <div class="stat-box"><span>⚖️ الوزن الإجمالي (كغم)</span><div class="stat-value" id="totalWeight">0.0</div></div>
+        <div class="stat-box"><span>📊 متوسط الوزن</span><div class="stat-value" id="avgWeight">0.0</div></div>
+    </div>
+
+
+    <div class="calculator-section">
+        <div class="calc-title">🧮 آلة حاسبة (أدخل الوزن ثم اضغط إضافة)</div>
+        <div class="calc-display" id="calcDisplay">0</div>
+        <div class="calc-buttons">
+            <button class="calc-btn" data-value="9">9</button>
+            <button class="calc-btn" data-value="8">8</button>
+            <button class="calc-btn" data-value="7">7</button>
+            <button class="calc-btn" data-value="6">6</button>
+            <button class="calc-btn" data-value="5">5</button>
+            <button class="calc-btn" data-value="4">4</button>
+            <button class="calc-btn" data-value="3">3</button>
+            <button class="calc-btn" data-value="2">2</button>
+            <button class="calc-btn" data-value="1">1</button>
+            <button class="calc-btn" data-value=".">.</button>
+			<button class="calc-btn" data-value="0">0</button>
+            <button class="calc-btn btn-clear" id="clearCalcBtn">C</button>
+            <button class="calc-btn btn-add" id="addFromCalcBtn">➕ إضافة هذا الوزن</button>
+        </div>
+        <button class="sec-btn reset" id="resetEmptyBtn">🗑️ حذف جميع الكراتين</button>
+    </div>
+	    <div class="table-wrapper">
+        <table id="weightsTable">
+            <thead>
+                <tr><th>#</th><th>الوزن (كغم)</th><th>حذف</th></tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+    <footer>✏️ يمكنك تعديل الوزن مباشرة • حذف أي كرتون بالضغط على زر الحذف بجانبه</footer>
+	
+</div>
+
+<script>
+    let weights = [];  // يبدأ فارغاً، المستخدم يضيف واحداً واحداً
+
+    const tbody = document.getElementById('tableBody');
+    const cartonCountSpan = document.getElementById('cartonCount');
+    const totalWeightSpan = document.getElementById('totalWeight');
+    const avgWeightSpan = document.getElementById('avgWeight');
+    const calcDisplaySpan = document.getElementById('calcDisplay');
+    let currentInput = "0";
+
+    function updateCalcDisplay() {
+        calcDisplaySpan.innerText = currentInput;
+    }
+
+    function appendToCalc(value) {
+        if (value === '.') {
+            if (currentInput.includes('.')) return;
+            if (currentInput === "" || currentInput === "0") {
+                currentInput = "0.";
+                updateCalcDisplay();
+                return;
+            }
+            currentInput += ".";
+            updateCalcDisplay();
+            return;
+        }
+        if (currentInput === "0") {
+            currentInput = value;
+        } else {
+            currentInput += value;
+        }
+        updateCalcDisplay();
+    }
+
+    function clearCalculator() {
+        currentInput = "0";
+        updateCalcDisplay();
+    }
+
+    function addCurrentWeightToList() {
+        let weightValue = parseFloat(currentInput);
+        if (isNaN(weightValue)) {
+            alert("الرجاء إدخال رقم صحيح (مثال: 12.5)");
+            return;
+        }
+        if (weightValue < 0) {
+            alert("الوزن لا يمكن أن يكون سالباً");
+            return;
+        }
+        weights.push(weightValue);
+        renderTable();
+        clearCalculator();
+        const wrapper = document.querySelector('.table-wrapper');
+        if (wrapper) wrapper.scrollTop = wrapper.scrollHeight;
+    }
+
+    function updateStats() {
+        const count = weights.length;
+        const total = weights.reduce((sum, w) => sum + w, 0);
+        const avg = count > 0 ? total / count : 0;
+        cartonCountSpan.innerText = count;
+        totalWeightSpan.innerText = total.toFixed(2);
+        avgWeightSpan.innerText = avg.toFixed(2);
+    }
+
+    function deleteCartonByIndex(indexToDelete) {
+        if (indexToDelete >= 0 && indexToDelete < weights.length) {
+            weights.splice(indexToDelete, 1);
+            renderTable();
+        }
+    }
+
+    function renderTable() {
+        tbody.innerHTML = '';
+        weights.forEach((weight, idx) => {
+            const row = tbody.insertRow();
+            // رقم الكرتون
+            const cellNum = row.insertCell(0);
+            cellNum.innerText = idx + 1;
+            // خلية الوزن
+            const cellWeight = row.insertCell(1);
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.step = '0.1';
+            input.value = weight.toFixed(1);
+            input.classList.add('weight-input');
+            input.addEventListener('change', (e) => {
+                let newVal = parseFloat(e.target.value);
+                if (isNaN(newVal)) newVal = 0;
+                if (newVal < 0) newVal = 0;
+                weights[idx] = newVal;
+                updateStats();
+                e.target.value = newVal.toFixed(1);
+            });
+            cellWeight.appendChild(input);
+            // خلية الحذف
+            const cellDelete = row.insertCell(2);
+            const delBtn = document.createElement('button');
+            delBtn.innerText = '🗑️ حذف';
+            delBtn.classList.add('delete-btn');
+            delBtn.addEventListener('click', () => deleteCartonByIndex(idx));
+            cellDelete.appendChild(delBtn);
+        });
+        updateStats();
+    }
+
+    function deleteAllCartons() {
+        if (weights.length > 0 && confirm("هل أنت متأكد من حذف جميع الكراتين؟")) {
+            weights = [];
+            renderTable();
+            clearCalculator();
+        } else if (weights.length === 0) {
+            alert("القائمة فارغة بالفعل.");
+        }
+    }
+
+    // ربط الأزرار
+    document.querySelectorAll('.calc-btn[data-value]').forEach(btn => {
+        btn.addEventListener('click', () => appendToCalc(btn.getAttribute('data-value')));
+    });
+    document.getElementById('clearCalcBtn').addEventListener('click', clearCalculator);
+    document.getElementById('addFromCalcBtn').addEventListener('click', addCurrentWeightToList);
+    document.getElementById('resetEmptyBtn').addEventListener('click', deleteAllCartons);
+
+    // بداية فارغة
+    renderTable();
+    clearCalculator();
+</script>
+</body>
+</html>
